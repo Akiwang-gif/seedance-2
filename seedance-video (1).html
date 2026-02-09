@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seedance-2 - AI视频创作平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: #F8FAFC;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 3rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #CBD5E1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-links a:hover {
+            color: #FBBF24;
+            transform: translateY(-2px);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem 3rem;
+            position: relative;
+        }
+
+        .brand-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #A5B4FC;
+            text-shadow: 0 2px 8px rgba(99, 102, 241, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #F8FAFC, #CBD5E1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #94A3B8;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-keywords {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            padding: 0 2rem;
+        }
+
+        .keyword-tag {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: #CBD5E1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .keyword-tag:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .keyword-tag .emoji {
+            margin-right: 0.4rem;
+            font-size: 1rem;
+        }
+
+        /* Floating Brand Watermark */
+        .brand-watermark {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #A5B4FC;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            transition: all 0.3s;
+            opacity: 0.7;
+        }
+
+        .brand-watermark:hover {
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .brand-watermark .pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #6366F1;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        /* Feature Cards */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 10px rgba(99, 102, 241, 0.5));
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #F8FAFC;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .feature-card p {
+            color: #94A3B8;
+            line-height: 1.6;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        /* Gallery Section */
+        .gallery-section {
+            padding: 4rem 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .gallery-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #F8FAFC, #CBD5E1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            margin-bottom: 0.5rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(30, 41, 59, 0.4);
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .gallery-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            font-size: 3rem;
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
+        }
+
+        .gallery-overlay p {
+            color: white;
+            font-size: 0.9rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-more {
+            display: block;
+            margin: 2rem auto 0;
+            background: rgba(99, 102, 241, 0.2);
+            border: 2px solid #6366F1;
+            color: #F8FAFC;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-more:hover {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Creator Page */
+        .creator-page {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem;
+        }
+
+        .creator-page.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .preview-section {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: #64748B;
+        }
+
+        .preview-placeholder .icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .controls-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: #F8FAFC;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #CBD5E1;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            color: #F8FAFC;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #6366F1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .setting-item {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 0.8rem;
+            color: #CBD5E1;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .setting-item select {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            color: #F8FAFC;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .slider-container {
+            width: 100%;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.5);
+        }
+
+        .slider-value {
+            display: inline-block;
+            margin-left: 1rem;
+            color: #FBBF24;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.6);
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #CBD5E1;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-back:hover {
+            color: #FBBF24;
+            transform: translateX(-5px);
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed rgba(99, 102, 241, 0.4);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .upload-area:hover {
+            border-color: #6366F1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .upload-area .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
+        .upload-area p {
+            color: #94A3B8;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 968px) {
+            .creator-page.active {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-keywords {
+                gap: 1rem;
+            }
+
+            .brand-watermark {
+                bottom: 1rem;
+                right: 1rem;
+                font-size: 0.75rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">
+            Seedance-2
+        </div>
+        <div class="nav-links">
+            <a href="#" onclick="showHome()">首页</a>
+            <a href="#gallery">作品</a>
+            <button class="btn-login">登录</button>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="homePage">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="brand-badge">✨ SEEDANCE-2.INFO</div>
+            <h1>AI 视频创作，触手可及</h1>
+            <p class="hero-subtitle">让想象成为现实</p>
+            
+            <div class="brand-keywords">
+                <div class="keyword-tag"><span class="emoji">🎬</span>文字转视频</div>
+                <div class="keyword-tag"><span class="emoji">🖼️</span>图片转视频</div>
+                <div class="keyword-tag"><span class="emoji">🎨</span>视频特效</div>
+            </div>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="features">
+            <div class="feature-card" onclick="showCreator('text2video')">
+                <div class="feature-icon">✨</div>
+                <h3>文字转视频</h3>
+                <p>描述你的想法，AI 为你创作视频</p>
+            </div>
+
+            <div class="feature-card" onclick="showCreator('image2video')">
+                <div class="feature-icon">🖼️</div>
+                <h3>图片转视频</h3>
+                <p>让静态图片动起来</p>
+            </div>
+
+            <div class="feature-card" onclick="showCreator('effects')">
+                <div class="feature-icon">🎨</div>
+                <h3>视频特效</h3>
+                <p>为视频添加酷炫滤镜与效果</p>
+            </div>
+        </div>
+
+        <!-- Gallery Section -->
+        <div class="gallery-section" id="gallery">
+            <div class="gallery-header">
+                <h2>精选作品</h2>
+            </div>
+
+            <div class="gallery-grid" id="galleryGrid">
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">🌊</div>
+                    <div class="gallery-overlay">
+                        <p>海浪与日落</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">🌸</div>
+                    <div class="gallery-overlay">
+                        <p>樱花飘落</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">🚀</div>
+                    <div class="gallery-overlay">
+                        <p>星际旅行</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">🏙️</div>
+                    <div class="gallery-overlay">
+                        <p>城市夜景</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">🌲</div>
+                    <div class="gallery-overlay">
+                        <p>森林漫步</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">🎭</div>
+                    <div class="gallery-overlay">
+                        <p>艺术表演</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">🏔️</div>
+                    <div class="gallery-overlay">
+                        <p>雪山之巅</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">🎪</div>
+                    <div class="gallery-overlay">
+                        <p>奇幻马戏团</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-more" onclick="loadMoreGallery()">浏览更多</button>
+        </div>
+    </div>
+
+    <!-- Creator Page - Text to Video -->
+    <div id="text2videoPage" class="creator-page">
+        <div class="preview-section">
+            <div class="preview-placeholder">
+                <div class="icon">🎬</div>
+                <p>视频预览区</p>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <a href="#" class="btn-back" onclick="showHome()">← 返回</a>
+            <h2>文字转视频</h2>
+
+            <div class="input-group">
+                <label>描述你的视频</label>
+                <textarea placeholder="例如：一只橘猫在月光下的屋顶上优雅地跳舞，背景是璀璨的城市夜景..."></textarea>
+            </div>
+
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>视频时长</label>
+                    <div class="slider-container">
+                        <input type="range" min="3" max="10" value="5" class="slider" id="durationSlider" oninput="updateSliderValue('duration', this.value)">
+                        <span class="slider-value" id="durationValue">5秒</span>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label>分辨率</label>
+                    <select>
+                        <option>720p</option>
+                        <option selected>1080p</option>
+                        <option>4K</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>视频风格</label>
+                    <select>
+                        <option>自然写实</option>
+                        <option>动漫风格</option>
+                        <option>赛博朋克</option>
+                        <option>复古胶片</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>运动强度</label>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="5" class="slider" id="motionSlider" oninput="updateSliderValue('motion', this.value)">
+                        <span class="slider-value" id="motionValue">中等</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-generate" onclick="generateVideo()">🎬 生成视频</button>
+        </div>
+    </div>
+
+    <!-- Creator Page - Image to Video -->
+    <div id="image2videoPage" class="creator-page">
+        <div class="preview-section">
+            <div class="preview-placeholder">
+                <div class="icon">🖼️</div>
+                <p>图片预览区</p>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <a href="#" class="btn-back" onclick="showHome()">← 返回</a>
+            <h2>图片转视频</h2>
+
+            <div class="input-group">
+                <div class="upload-area">
+                    <div class="icon">📤</div>
+                    <p>点击或拖拽上传图片</p>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>运动方向</label>
+                    <select>
+                        <option>自动识别</option>
+                        <option>向前推进</option>
+                        <option>环绕旋转</option>
+                        <option>上下移动</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>运动强度</label>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="5" class="slider" oninput="updateSliderValue('motion2', this.value)">
+                        <span class="slider-value" id="motion2Value">中等</span>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label>视频时长</label>
+                    <div class="slider-container">
+                        <input type="range" min="3" max="10" value="5" class="slider" oninput="updateSliderValue('duration2', this.value)">
+                        <span class="slider-value" id="duration2Value">5秒</span>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label>分辨率</label>
+                    <select>
+                        <option>720p</option>
+                        <option selected>1080p</option>
+                        <option>4K</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-generate" onclick="generateVideo()">🎬 生成视频</button>
+        </div>
+    </div>
+
+    <!-- Creator Page - Effects -->
+    <div id="effectsPage" class="creator-page">
+        <div class="preview-section">
+            <div class="preview-placeholder">
+                <div class="icon">🎨</div>
+                <p>视频预览区</p>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <a href="#" class="btn-back" onclick="showHome()">← 返回</a>
+            <h2>视频特效编辑</h2>
+
+            <div class="input-group">
+                <div class="upload-area">
+                    <div class="icon">🎥</div>
+                    <p>点击或拖拽上传视频</p>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>滤镜效果</label>
+                    <select>
+                        <option>无</option>
+                        <option>复古胶片</option>
+                        <option>赛博朋克</option>
+                        <option>黑白艺术</option>
+                        <option>动漫风格</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>播放速度</label>
+                    <select>
+                        <option>0.5x 慢动作</option>
+                        <option selected>1x 正常</option>
+                        <option>1.5x 加速</option>
+                        <option>2x 快速</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>特效强度</label>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="7" class="slider" oninput="updateSliderValue('effect', this.value)">
+                        <span class="slider-value" id="effectValue">强</span>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label>背景音乐</label>
+                    <select>
+                        <option>无</option>
+                        <option>欢快节奏</option>
+                        <option>史诗配乐</option>
+                        <option>轻松氛围</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-generate" onclick="generateVideo()">✨ 应用特效</button>
+        </div>
+    </div>
+
+    <!-- Floating Brand Watermark -->
+    <div class="brand-watermark">
+        <span class="pulse"></span>
+        seedance-2.info
+    </div>
+
+    <script>
+        // Navigation
+        function showHome() {
+            document.getElementById('homePage').style.display = 'block';
+            document.getElementById('text2videoPage').classList.remove('active');
+            document.getElementById('image2videoPage').classList.remove('active');
+            document.getElementById('effectsPage').classList.remove('active');
+        }
+
+        function showCreator(type) {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('text2videoPage').classList.remove('active');
+            document.getElementById('image2videoPage').classList.remove('active');
+            document.getElementById('effectsPage').classList.remove('active');
+            
+            if (type === 'text2video') {
+                document.getElementById('text2videoPage').classList.add('active');
+            } else if (type === 'image2video') {
+                document.getElementById('image2videoPage').classList.add('active');
+            } else if (type === 'effects') {
+                document.getElementById('effectsPage').classList.add('active');
+            }
+            
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Slider updates
+        function updateSliderValue(type, value) {
+            const labels = {
+                duration: value + '秒',
+                duration2: value + '秒',
+                motion: value <= 3 ? '轻微' : value <= 7 ? '中等' : '强烈',
+                motion2: value <= 3 ? '轻微' : value <= 7 ? '中等' : '强烈',
+                effect: value <= 3 ? '弱' : value <= 7 ? '中' : '强'
+            };
+            
+            document.getElementById(type + 'Value').textContent = labels[type];
+        }
+
+        // Generate video
+        function generateVideo() {
+            alert('🎬 视频生成中...\n\n预计需要 1-2 分钟\n完成后将显示在预览区');
+        }
+
+        // Load more gallery items
+        function loadMoreGallery() {
+            const gallery = document.getElementById('galleryGrid');
+            const emojis = ['🎆', '🌈', '⚡', '🔥', '💫', '🌟', '✨', '🎨'];
+            const titles = ['烟花绽放', '彩虹之上', '闪电风暴', '火焰舞蹈', '星光闪耀', '璀璨星河', '魔法时刻', '艺术创想'];
+            
+            for (let i = 0; i < 8; i++) {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.innerHTML = `
+                    <div class="gallery-placeholder">${emojis[i]}</div>
+                    <div class="gallery-overlay">
+                        <p>${titles[i]}</p>
+                    </div>
+                `;
+                gallery.appendChild(item);
+            }
+        }
+    </script>
+</body>
+</html>
