@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 
 const GALLERY_VIDEOS = [
   { src: '/演唱会.mp4', label: 'Concert' },
@@ -51,6 +52,7 @@ export default function HomePage() {
   const [effectsVideoUrl, setEffectsVideoUrl] = useState(null);
   const [effectsUploadName, setEffectsUploadName] = useState('');
   const [effectsFileInputRef, setEffectsFileInputRef] = useState(null);
+  const { data: session, status } = useSession();
 
   const showHome = useCallback((e) => {
     if (e) e.preventDefault();
@@ -154,7 +156,17 @@ export default function HomePage() {
           <a href="#gallery" onClick={(e) => scrollToSection(e, 'gallery')}>Gallery</a>
           <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')}>How it works</a>
           <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')}>FAQ</a>
-          <button type="button" className="btn-login">Sign in</button>
+          {status === 'loading' ? (
+            <span className="nav-user-email">Loading…</span>
+          ) : session?.user ? (
+            <span className="nav-user">
+              <span className="nav-user-email" title={session.user.email}>{session.user.email}</span>
+              {session.user.image && <img src={session.user.image} alt="" className="nav-user-avatar" />}
+              <button type="button" className="btn-login btn-logout" onClick={() => signOut()}>Sign out</button>
+            </span>
+          ) : (
+            <button type="button" className="btn-login" onClick={() => signIn('google', { callbackUrl: '/' })}>Sign in with Google</button>
+          )}
         </div>
       </nav>
 

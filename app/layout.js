@@ -1,5 +1,6 @@
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+import { SessionProvider } from './components/SessionProvider';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 const plusJakarta = Plus_Jakarta_Sans({
@@ -57,7 +58,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.className} ${plusJakarta.variable}`}>
-        {children}
+        <SessionProvider>{children}</SessionProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       </body>
