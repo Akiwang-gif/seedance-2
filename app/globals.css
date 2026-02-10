@@ -37,6 +37,36 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* 主界面星空背景：低透明度、上实下淡渐变、降低饱和度 */
+.page-bg-stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, black 0%, transparent 72%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 72%);
+    mask-size: 100% 100%;
+    -webkit-mask-size: 100% 100%;
+}
+
+.page-bg-stars-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.65;
+    filter: saturate(0.72);
+}
+
+#homePage {
+    position: relative;
+    z-index: 1;
+}
+
 /* Nav */
 nav {
     display: flex;
@@ -295,6 +325,34 @@ nav {
     padding: 2rem var(--content-padding-x) 4rem;
     max-width: var(--content-max);
     margin: 0 auto;
+}
+
+/* 单卡居中放大（Image to Video） */
+.features--single {
+    grid-template-columns: 1fr;
+    max-width:  min(560px, var(--content-max));
+    margin-left: auto;
+    margin-right: auto;
+    padding: 2.5rem var(--content-padding-x) 4rem;
+}
+
+.feature-card--hero {
+    padding: 3rem 2.5rem;
+    border-top-color: var(--accent-secondary);
+}
+
+.feature-card--hero .feature-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.feature-card--hero h3 {
+    font-size: 1.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.feature-card--hero p {
+    font-size: 1.05rem;
 }
 
 .feature-card {
@@ -702,6 +760,13 @@ nav {
 .footer-col .lang-label {
     font-size: 0.9rem;
     color: #a1a1a6;
+}
+
+/* 法律与说明区块：位于页脚下方，通过页脚链接跳转 */
+.legal-pages {
+    padding: 2rem var(--content-padding-x) 4rem;
+    max-width: var(--content-max);
+    margin: 0 auto;
 }
 
 .legal-section { padding-top: 3rem; }

@@ -15,12 +15,11 @@ const GALLERY_VIDEOS = [
 ];
 
 const FAQ_ITEMS = [
-  { q: 'What is Seedance-2?', a: 'Seedance-2 is an AI video tool at seedance-2.info. It offers text-to-video, image-to-video, and video effects so you can create short clips quickly for fun or content without complex software.' },
-  { q: 'How do I create a video from text?', a: 'Click "Text to Video" on the home page, type a short description of your scene or idea, choose duration and style, then click "Generate video." Your Seedance Video will be ready in about 1–2 minutes.' },
-  { q: 'Can I use my own image or video?', a: 'Yes. For image-to-video you upload an image and set motion options. For video effects you upload a video and apply filters, speed changes, or music. Supported formats are listed in the upload areas.' },
+  { q: 'What is Seedance-2?', a: 'Seedance-2 is an AI video tool at seedance-2.info. It offers image-to-video so you can turn still images into short clips quickly for fun or content without complex software.' },
+  { q: 'Can I use my own image?', a: 'Yes. Upload an image and describe the motion or scene. Supported formats are PNG, JPG, and WEBP. Resolution options are listed in the upload area.' },
   { q: 'How long does generation take?', a: 'Usually 1–2 minutes per video. Duration and resolution can affect this. You\'ll see a message when generation is in progress and when it\'s done.' },
   { q: 'Is Seedance-2 free?', a: 'You can try Seedance-2 and create videos with the options on the site. Some features or higher quality may require sign-in or credits. Check the pricing or plan info after signing in.' },
-  { q: 'What is Seedance Video?', a: '"Seedance Video" means videos created with Seedance AI tools—including Seedance-2. When we say "create a Seedance Video," we mean using this site to generate or edit AI videos.' },
+  { q: 'What is Seedance Video?', a: '"Seedance Video" means videos created with Seedance AI tools—including Seedance-2. When we say "create a Seedance Video," we mean using this site to generate AI videos from your images.' },
 ];
 
 function GalleryItem({ src, label }) {
@@ -49,9 +48,6 @@ export default function HomePage() {
   const [i2vPrompt, setI2vPrompt] = useState('');
   const [i2vImageSize, setI2vImageSize] = useState('1280x720');
   const [i2vGenerating, setI2vGenerating] = useState(false);
-  const [effectsVideoUrl, setEffectsVideoUrl] = useState(null);
-  const [effectsUploadName, setEffectsUploadName] = useState('');
-  const [effectsFileInputRef, setEffectsFileInputRef] = useState(null);
   const { data: session, status } = useSession();
 
   const showHome = useCallback((e) => {
@@ -138,13 +134,6 @@ export default function HomePage() {
     }
   }, [i2vPrompt, i2vImageBase64, i2vImageSize, pollVideoStatus]);
 
-  const handleEffectsVideoChange = useCallback((e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setEffectsVideoUrl(URL.createObjectURL(f));
-    setEffectsUploadName(f.name);
-  }, []);
-
   const showHomePage = activeCreator === null;
 
   return (
@@ -171,36 +160,28 @@ export default function HomePage() {
       </nav>
 
       {showHomePage && (
-        <div id="homePage">
+        <>
+          <div className="page-bg-stars" aria-hidden="true">
+            <img src="/background-stars.png" alt="Starry sky and nebula background, fading to transparent from top to bottom" className="page-bg-stars-img" />
+          </div>
+          <div id="homePage">
           <header className="hero">
             <p className="hero-badge">Seedance AI · seedance-2.info</p>
             <h1>Seedance Video<br />Imagine. Create.</h1>
-            <p className="hero-sub">Text to video · Image to video · Video effects</p>
+            <p className="hero-sub">Image to video</p>
             <div className="keyword-row" aria-label="Brand and feature keywords">
               <span className="keyword-tag"><strong>Seedance Video</strong></span>
               <span className="keyword-tag"><strong>Seedance-2</strong></span>
               <span className="keyword-tag"><strong>Seedance AI</strong></span>
-              <span className="keyword-tag">Text to video</span>
               <span className="keyword-tag">Image to video</span>
-              <span className="keyword-tag">Video effects</span>
             </div>
           </header>
 
-          <section className="features" id="features">
-            <article className="feature-card" onClick={() => showCreator('text2video')} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && showCreator('text2video')}>
-              <div className="feature-icon">✨</div>
-              <h3>Text to Video</h3>
-              <p>Describe your idea, AI creates the video</p>
-            </article>
-            <article className="feature-card" onClick={() => showCreator('image2video')} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && showCreator('image2video')}>
+          <section className="features features--single" id="features">
+            <article className="feature-card feature-card--hero" onClick={() => showCreator('image2video')} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && showCreator('image2video')}>
               <div className="feature-icon">🖼️</div>
               <h3>Image to Video</h3>
               <p>Turn still images into motion</p>
-            </article>
-            <article className="feature-card" onClick={() => showCreator('effects')} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && showCreator('effects')}>
-              <div className="feature-icon">🎨</div>
-              <h3>Video editing / Effects</h3>
-              <p>Filters and effects in one click</p>
             </article>
           </section>
 
@@ -218,10 +199,10 @@ export default function HomePage() {
 
           <section className="content-section" id="how-it-works" aria-labelledby="how-title">
             <h2 id="how-title">How to create AI videos with Seedance-2</h2>
-            <p className="section-lead">Three simple steps to turn your ideas into Seedance Video.</p>
+            <p className="section-lead">Three simple steps to turn your images into Seedance Video.</p>
             <ol className="steps-list">
-              <li><h3>Choose your mode</h3><p>Pick Text to Video, Image to Video, or Video effects from the home page.</p></li>
-              <li><h3>Add your input</h3><p>For text-to-video: write a short description. For image-to-video: upload an image and set motion. For effects: upload a video and pick filters or music.</p></li>
+              <li><h3>Choose Image to Video</h3><p>Click Image to Video on the home page.</p></li>
+              <li><h3>Add your image and prompt</h3><p>Upload an image and describe the motion or scene you want.</p></li>
               <li><h3>Generate and download</h3><p>Click Generate. Your video is created in about 1–2 minutes. Preview it, then download to use in your projects.</p></li>
             </ol>
           </section>
@@ -230,12 +211,10 @@ export default function HomePage() {
             <h2 id="features-title">Why Seedance-2</h2>
             <p className="section-lead">Seedance-2 at seedance-2.info is your go-to Seedance AI video tool for fun, quick creations.</p>
             <div className="features-intro">
-              <p>Seedance-2 lets you create AI videos from text, from a single image, or by adding effects to existing videos. No complex setup—just describe, upload, and generate.</p>
+              <p>Seedance-2 lets you create AI videos from a single image. No complex setup—upload your image, describe the motion, and generate.</p>
             </div>
             <ul className="feature-list">
-              <li><strong>Text to video</strong><span>Describe your idea in plain English; AI turns it into a short video.</span></li>
               <li><strong>Image to video</strong><span>Upload a photo and bring it to life with motion.</span></li>
-              <li><strong>Video effects & editing</strong><span>Apply filters, change speed, or add music to your clips.</span></li>
               <li><strong>Simple and fast</strong><span>Clean interface, clear options, and results in about 1–2 minutes.</span></li>
             </ul>
           </section>
@@ -252,97 +231,9 @@ export default function HomePage() {
               ))}
             </ul>
           </section>
-
-          <section className="content-section legal-section" id="terms" aria-labelledby="terms-title">
-            <h2 id="terms-title">Terms of Service</h2>
-            <p className="section-lead">Last updated: 2026. By using seedance-2.info you agree to these terms.</p>
-            <div className="legal-block">
-              <h3>1. Use of Service</h3>
-              <p>Seedance-2 at seedance-2.info provides AI video creation tools. You may use the service for personal or commercial projects in line with these terms and applicable law.</p>
-              <h3>2. Your Content</h3>
-              <p>You keep ownership of content you upload and create. You grant us a limited license to process and generate outputs.</p>
-              <h3>3. Acceptable Use</h3>
-              <p>You must not use the service for illegal, harmful, or abusive purposes.</p>
-              <h3>4. Disclaimer</h3>
-              <p>The service is provided &quot;as is.&quot; We do not guarantee uninterrupted or error-free operation.</p>
-              <h3>5. Changes</h3>
-              <p>We may update these terms. Continued use after changes constitutes acceptance.</p>
-            </div>
-          </section>
-
-          <section className="content-section legal-section" id="privacy" aria-labelledby="privacy-title">
-            <h2 id="privacy-title">Privacy Policy</h2>
-            <p className="section-lead">How we collect, use, and protect your information at seedance-2.info.</p>
-            <div className="legal-block">
-              <h3>1. Information We Collect</h3>
-              <p>We may collect information you provide and usage data to operate and improve the service.</p>
-              <h3>2. How We Use It</h3>
-              <p>We use this information to provide and improve Seedance-2, to communicate with you, and to ensure security and compliance.</p>
-              <h3>3. Sharing</h3>
-              <p>We do not sell your personal data. We may share data with service providers under strict confidentiality, or when required by law.</p>
-              <h3>4. Security</h3>
-              <p>We use industry-standard measures to protect your data.</p>
-              <h3>5. Your Rights</h3>
-              <p>You may request access, correction, or deletion of your personal data where applicable.</p>
-              <h3>6. Updates</h3>
-              <p>We may update this policy from time to time. Continued use means you accept the updated policy.</p>
-            </div>
-          </section>
-
-          <section className="content-section legal-section" id="contact">
-            <h2 id="contact-title">Contact Us</h2>
-            <p className="section-lead">For support or inquiries, please email us or use the contact form when available.</p>
-          </section>
-          <section className="content-section legal-section" id="refund">
-            <h2 id="refund-title">Refund Policy</h2>
-            <p className="section-lead">Refund eligibility and process for paid plans will be described here. Contact us for specific cases.</p>
-          </section>
-          <section className="content-section legal-section" id="about">
-            <h2 id="about-title">About Us</h2>
-            <p className="section-lead">Seedance-2 is an AI video creation platform at seedance-2.info, offering text-to-video, image-to-video, and video effects for creators worldwide.</p>
-          </section>
-        </div>
+          </div>
+        </>
       )}
-
-      {/* Text to Video creator */}
-      <div id="text2videoPage" className={`creator-page ${activeCreator === 'text2video' ? 'active' : ''}`} style={{ display: activeCreator === 'text2video' ? undefined : 'none' }}>
-        <div className="preview-section">
-          <div className="preview-placeholder"><div className="icon">🎬</div><p>Video preview</p></div>
-        </div>
-        <div className="controls-section">
-          <a href="#" className="btn-back" onClick={(e) => { e.preventDefault(); showHome(e); }}>← Back</a>
-          <h2>Text to Video</h2>
-          <div className="input-group">
-            <label>Prompt</label>
-            <textarea placeholder="e.g. A ginger cat dancing on a rooftop under moonlight, city skyline..." />
-          </div>
-          <div className="settings-grid">
-            <div className="setting-item">
-              <label>Duration</label>
-              <div className="slider-container">
-                <input type="range" min="3" max="10" defaultValue={5} className="slider" id="durationSlider" />
-                <span className="slider-value">5 sec</span>
-              </div>
-            </div>
-            <div className="setting-item">
-              <label>Resolution</label>
-              <select defaultValue="1080p"><option>720p</option><option>1080p</option><option>4K</option></select>
-            </div>
-            <div className="setting-item">
-              <label>Style</label>
-              <select><option>Realistic</option><option>Anime</option><option>Cyberpunk</option><option>Vintage</option></select>
-            </div>
-            <div className="setting-item">
-              <label>Motion</label>
-              <div className="slider-container">
-                <input type="range" min="1" max="10" defaultValue={5} className="slider" />
-                <span className="slider-value">Medium</span>
-              </div>
-            </div>
-          </div>
-          <button type="button" className="btn-generate" onClick={() => alert('Video is generating. This may take 1–2 minutes.')}>Generate video</button>
-        </div>
-      </div>
 
       {/* Image to Video creator */}
       <div id="image2videoPage" className={`creator-page ${activeCreator === 'image2video' ? 'active' : ''}`} style={{ display: activeCreator === 'image2video' ? undefined : 'none' }}>
@@ -394,50 +285,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Video effects creator */}
-      <div id="effectsPage" className={`creator-page ${activeCreator === 'effects' ? 'active' : ''}`} style={{ display: activeCreator === 'effects' ? undefined : 'none' }}>
-        <div className="preview-section">
-          {!effectsVideoUrl && <div className="preview-placeholder"><div className="icon">🎨</div><p>Preview</p></div>}
-          {effectsVideoUrl && (
-            <div><video src={effectsVideoUrl} controls playsInline style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 12 }} /></div>
-          )}
-        </div>
-        <div className="controls-section">
-          <a href="#" className="btn-back" onClick={(e) => { e.preventDefault(); showHome(e); }}>← Back</a>
-          <h2>Video effects</h2>
-          <div className="input-group">
-            <label>Video</label>
-            <input type="file" ref={(el) => setEffectsFileInputRef(el)} accept="video/mp4,video/webm,video/quicktime" style={{ display: 'none' }} onChange={handleEffectsVideoChange} />
-            <div className="upload-area" onClick={() => effectsFileInputRef?.click()}>
-              <div className="icon">🎥</div>
-              <p>{effectsUploadName || 'Click to upload video (MP4, WebM, MOV)'}</p>
-            </div>
-          </div>
-          <div className="settings-grid">
-            <div className="setting-item">
-              <label>Filter</label>
-              <select><option>None</option><option>Vintage</option><option>Cyberpunk</option><option>B&W</option><option>Anime</option></select>
-            </div>
-            <div className="setting-item">
-              <label>Speed</label>
-              <select defaultValue="1x"><option>0.5x</option><option>1x</option><option>1.5x</option><option>2x</option></select>
-            </div>
-            <div className="setting-item">
-              <label>Intensity</label>
-              <div className="slider-container">
-                <input type="range" min="1" max="10" defaultValue={7} className="slider" />
-                <span className="slider-value">High</span>
-              </div>
-            </div>
-            <div className="setting-item">
-              <label>Music</label>
-              <select><option>None</option><option>Upbeat</option><option>Epic</option><option>Chill</option></select>
-            </div>
-          </div>
-          <button type="button" className="btn-generate" onClick={() => alert('Apply effects. (Demo)')}>Apply effects</button>
-        </div>
-      </div>
-
       <footer className="site-footer">
         <p className="footer-disclaimer">Seedance-2 is an independent platform and is not affiliated with Bytedance or its products.</p>
         <div className="footer-inner">
@@ -449,16 +296,16 @@ export default function HomePage() {
             <div className="footer-col">
               <h4>Links</h4>
               <ul>
-                <li><a href="#contact">Contact Us</a></li>
-                <li><a href="#refund">Refund Policy</a></li>
-                <li><a href="#about">About Us</a></li>
+                <li><a href="#contact" onClick={(e) => scrollToSection(e, 'contact')}>Contact Us</a></li>
+                <li><a href="#refund" onClick={(e) => scrollToSection(e, 'refund')}>Refund Policy</a></li>
+                <li><a href="#about" onClick={(e) => scrollToSection(e, 'about')}>About Us</a></li>
               </ul>
             </div>
             <div className="footer-col">
               <h4>Legal</h4>
               <ul>
-                <li><a href="#terms">Terms of Service</a></li>
-                <li><a href="#privacy">Privacy Policy</a></li>
+                <li><a href="#terms" onClick={(e) => scrollToSection(e, 'terms')}>Terms of Service</a></li>
+                <li><a href="#privacy" onClick={(e) => scrollToSection(e, 'privacy')}>Privacy Policy</a></li>
               </ul>
             </div>
             <div className="footer-col">
@@ -468,6 +315,56 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* 法律与说明区块：仅在点击页脚链接后跳转显示 */}
+      <div className="legal-pages">
+        <section className="content-section legal-section" id="terms" aria-labelledby="terms-title">
+          <h2 id="terms-title">Terms of Service</h2>
+          <p className="section-lead">Last updated: 2026. By using seedance-2.info you agree to these terms.</p>
+          <div className="legal-block">
+            <h3>1. Use of Service</h3>
+            <p>Seedance-2 at seedance-2.info provides AI video creation tools. You may use the service for personal or commercial projects in line with these terms and applicable law.</p>
+            <h3>2. Your Content</h3>
+            <p>You keep ownership of content you upload and create. You grant us a limited license to process and generate outputs.</p>
+            <h3>3. Acceptable Use</h3>
+            <p>You must not use the service for illegal, harmful, or abusive purposes.</p>
+            <h3>4. Disclaimer</h3>
+            <p>The service is provided &quot;as is.&quot; We do not guarantee uninterrupted or error-free operation.</p>
+            <h3>5. Changes</h3>
+            <p>We may update these terms. Continued use after changes constitutes acceptance.</p>
+          </div>
+        </section>
+        <section className="content-section legal-section" id="privacy" aria-labelledby="privacy-title">
+          <h2 id="privacy-title">Privacy Policy</h2>
+          <p className="section-lead">How we collect, use, and protect your information at seedance-2.info.</p>
+          <div className="legal-block">
+            <h3>1. Information We Collect</h3>
+            <p>We may collect information you provide and usage data to operate and improve the service.</p>
+            <h3>2. How We Use It</h3>
+            <p>We use this information to provide and improve Seedance-2, to communicate with you, and to ensure security and compliance.</p>
+            <h3>3. Sharing</h3>
+            <p>We do not sell your personal data. We may share data with service providers under strict confidentiality, or when required by law.</p>
+            <h3>4. Security</h3>
+            <p>We use industry-standard measures to protect your data.</p>
+            <h3>5. Your Rights</h3>
+            <p>You may request access, correction, or deletion of your personal data where applicable.</p>
+            <h3>6. Updates</h3>
+            <p>We may update this policy from time to time. Continued use means you accept the updated policy.</p>
+          </div>
+        </section>
+        <section className="content-section legal-section" id="contact">
+          <h2 id="contact-title">Contact Us</h2>
+          <p className="section-lead">For support or inquiries, please email us or use the contact form when available.</p>
+        </section>
+        <section className="content-section legal-section" id="refund">
+          <h2 id="refund-title">Refund Policy</h2>
+          <p className="section-lead">Refund eligibility and process for paid plans will be described here. Contact us for specific cases.</p>
+        </section>
+        <section className="content-section legal-section" id="about">
+          <h2 id="about-title">About Us</h2>
+          <p className="section-lead">Seedance-2 is an AI video creation platform at seedance-2.info, offering image-to-video for creators worldwide.</p>
+        </section>
+      </div>
 
     </>
   );

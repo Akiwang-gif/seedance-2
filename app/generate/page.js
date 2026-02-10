@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 import Link from 'next/link';
 
 export default function GeneratePage() {
-  const [activeTab, setActiveTab] = useState('text2video');
   const [i2vImageBase64, setI2vImageBase64] = useState(null);
   const [i2vUploadName, setI2vUploadName] = useState('');
   const [i2vStatus, setI2vStatus] = useState('');
@@ -13,9 +12,6 @@ export default function GeneratePage() {
   const [i2vPrompt, setI2vPrompt] = useState('');
   const [i2vSize, setI2vSize] = useState('1280x720');
   const [i2vGenerating, setI2vGenerating] = useState(false);
-  const [effVideoUrl, setEffVideoUrl] = useState(null);
-  const [effUploadName, setEffUploadName] = useState('');
-
   const handleI2vImageChange = useCallback((e) => {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -75,13 +71,6 @@ export default function GeneratePage() {
     }
   }, [i2vPrompt, i2vImageBase64, i2vSize, pollStatus]);
 
-  const handleEffVideoChange = useCallback((e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setEffVideoUrl(URL.createObjectURL(f));
-    setEffUploadName(f.name);
-  }, []);
-
   return (
     <>
       <header className="page-header">
@@ -91,54 +80,7 @@ export default function GeneratePage() {
         </div>
       </header>
 
-      <div className="tabs">
-        <button type="button" className={`tab ${activeTab === 'text2video' ? 'active' : ''}`} onClick={() => setActiveTab('text2video')}>Text to Video</button>
-        <button type="button" className={`tab ${activeTab === 'image2video' ? 'active' : ''}`} onClick={() => setActiveTab('image2video')}>Image to Video</button>
-        <button type="button" className={`tab ${activeTab === 'effects' ? 'active' : ''}`} onClick={() => setActiveTab('effects')}>Video effects</button>
-      </div>
-
-      {activeTab === 'text2video' && (
-        <div className="creator-page active">
-          <div className="preview-section">
-            <div className="preview-placeholder"><div className="icon">🎬</div><p>Video preview</p></div>
-          </div>
-          <div className="controls-section">
-            <h2>Text to Video</h2>
-            <div className="input-group">
-              <label>Prompt</label>
-              <textarea placeholder="e.g. A cat dancing on a rooftop under moonlight..." />
-            </div>
-            <div className="settings-grid">
-              <div className="setting-item">
-                <label>Duration</label>
-                <div className="slider-container">
-                  <input type="range" min="3" max="10" defaultValue={5} className="slider" id="t2vDuration" />
-                  <span className="slider-value">5 sec</span>
-                </div>
-              </div>
-              <div className="setting-item">
-                <label>Resolution</label>
-                <select defaultValue="1080p"><option>720p</option><option>1080p</option><option>4K</option></select>
-              </div>
-              <div className="setting-item">
-                <label>Style</label>
-                <select><option>Realistic</option><option>Anime</option><option>Cyberpunk</option><option>Vintage</option></select>
-              </div>
-              <div className="setting-item">
-                <label>Motion</label>
-                <div className="slider-container">
-                  <input type="range" min="1" max="10" defaultValue={5} className="slider" />
-                  <span className="slider-value">Medium</span>
-                </div>
-              </div>
-            </div>
-            <button type="button" className="btn-generate" onClick={() => alert('Video is generating. This may take 1–2 minutes.')}>Generate video</button>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'image2video' && (
-        <div className="creator-page active">
+      <div className="creator-page active">
           <div className="preview-section">
             {!i2vLoading && !i2vResultUrl && <div className="preview-placeholder"><div className="icon">🖼️</div><p>Preview</p></div>}
             {i2vLoading && <div className="preview-loading"><div className="icon">⏳</div><p>Generating…</p><p className="preview-loading-hint">{i2vStatus}</p></div>}
@@ -171,38 +113,6 @@ export default function GeneratePage() {
             <button type="button" className="btn-generate" id="i2vBtn" onClick={generateI2V} disabled={i2vGenerating}>Generate video</button>
           </div>
         </div>
-      )}
-
-      {activeTab === 'effects' && (
-        <div className="creator-page active">
-          <div className="preview-section">
-            {!effVideoUrl && <div className="preview-placeholder"><div className="icon">🎨</div><p>Preview</p></div>}
-            {effVideoUrl && <div><video src={effVideoUrl} controls playsInline /></div>}
-          </div>
-          <div className="controls-section">
-            <h2>Video effects</h2>
-            <div className="input-group">
-              <label>Video</label>
-              <input type="file" accept="video/mp4,video/webm,video/quicktime" style={{ display: 'none' }} id="effVideoInput" onChange={handleEffVideoChange} />
-              <div className="upload-area" onClick={() => document.getElementById('effVideoInput')?.click()}>
-                <div className="icon">🎥</div>
-                <p>{effUploadName || 'Click to upload video (MP4, WebM, MOV)'}</p>
-              </div>
-            </div>
-            <div className="settings-grid">
-              <div className="setting-item">
-                <label>Filter</label>
-                <select><option>None</option><option>Vintage</option><option>Cyberpunk</option><option>B&W</option></select>
-              </div>
-              <div className="setting-item">
-                <label>Speed</label>
-                <select defaultValue="1x"><option>0.5x</option><option>1x</option><option>1.5x</option><option>2x</option></select>
-              </div>
-            </div>
-            <button type="button" className="btn-generate" onClick={() => alert('Effects applied. (Demo)')}>Apply effects</button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
