@@ -18,6 +18,10 @@ const nextConfig = {
         ],
       },
       {
+        source: '/',
+        headers: [{ key: 'X-Robots-Tag', value: 'index, follow' }],
+      },
+      {
         source: '/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'index, follow' }],
       },
