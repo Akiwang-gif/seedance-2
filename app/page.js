@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import Image from 'next/image';
 import { signIn, signOut, useSession } from 'next-auth/react';
 
 /** 无自定义占位图时的后备图（渐变 + 播放图标） */
@@ -55,7 +54,7 @@ function GalleryItem({ src, label, poster }) {
         muted
         loop
         playsInline
-        preload="none"
+        preload="metadata"
         poster={poster || GALLERY_POSTER_FALLBACK}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -205,14 +204,7 @@ export default function HomePage() {
       {showHomePage && (
         <>
           <div className="page-bg-stars" aria-hidden="true">
-            <Image
-              src="/background-stars.png"
-              alt="Starry sky and nebula background, fading to transparent from top to bottom"
-              className="page-bg-stars-img"
-              fill
-              priority
-              sizes="100vw"
-            />
+            <img src="/background-stars.png" alt="Starry sky and nebula background, fading to transparent from top to bottom" className="page-bg-stars-img" />
           </div>
           <div id="homePage">
           <header className="hero">

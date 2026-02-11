@@ -59,9 +59,6 @@ const faqJsonLd = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preload" href="/background-stars.png" as="image" fetchPriority="high" />
-      </head>
       <body className={`${inter.className} ${plusJakarta.variable}`}>
         <SessionProvider>{children}</SessionProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }} />
