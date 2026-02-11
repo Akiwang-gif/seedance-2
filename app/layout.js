@@ -9,17 +9,20 @@ const plusJakarta = Plus_Jakarta_Sans({
   variable: '--font-heading',
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.seedance-2.info';
+
 export const metadata = {
   title: 'Seedance Video · Image to Video | Seedance-2',
   description:
     'Seedance-2: Create AI videos from images. Seedance AI image-to-video generator. Free to try | seedance-2.info',
   keywords:
     'seedance video, seedance-2, seedance ai, AI video generator, image to video, seedance-2.info',
+  robots: { index: true, follow: true },
   openGraph: {
     type: 'website',
     title: 'Seedance Video · Seedance-2 AI Image to Video',
     description: 'Image to video. Seedance AI—create in seconds.',
-    url: 'https://seedance-2.info/',
+    url: `${SITE_URL}/`,
     locale: 'en_US',
   },
   twitter: {
@@ -27,7 +30,7 @@ export const metadata = {
     title: 'Seedance Video · Seedance-2',
     description: 'Image to video. Seedance AI.',
   },
-  alternates: { canonical: 'https://seedance-2.info/' },
+  alternates: { canonical: `${SITE_URL}/` },
 };
 
 const webAppJsonLd = {
@@ -35,7 +38,7 @@ const webAppJsonLd = {
   '@type': 'WebApplication',
   name: 'Seedance-2',
   alternateName: ['Seedance Video', 'Seedance AI'],
-  url: 'https://seedance-2.info/',
+  url: `${SITE_URL}/`,
   applicationCategory: 'MultimediaApplication',
   description: 'Image to video. Seedance AI video creation platform.',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
