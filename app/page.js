@@ -1,7 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
+
+/** 移动端用：卡片占位图（渐变 + 播放图标），避免视频未加载时一片灰 */
+const GALLERY_POSTER =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9" fill="none"><rect width="16" height="9" fill="url(%23g)"/><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="%23e8e8ed"/><stop offset="1" stop-color="%23a0a0a8"/></linearGradient></defs><path d="M6 2.5v4l3.5-2-3.5-2z" fill="%23818cf8" opacity="0.9"/></svg>'
+  );
 
 const GALLERY_VIDEOS = [
   { src: '/演唱会.mp4', label: 'Concert' },
@@ -23,14 +30,35 @@ const FAQ_ITEMS = [
 ];
 
 function GalleryItem({ src, label }) {
+  const videoRef = useRef(null);
   const handleMouseEnter = useCallback((e) => e.target.play().catch(() => {}), []);
   const handleMouseLeave = useCallback((e) => {
     e.target.pause();
     e.target.currentTime = 0;
   }, []);
+  const handleTap = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+      v.currentTime = 0;
+    }
+  }, []);
   return (
-    <div className="gallery-item">
-      <video src={src} muted loop playsInline preload="metadata" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} />
+    <div className="gallery-item" onClick={handleTap} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && handleTap()} aria-label={`Play ${label}`}>
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={GALLERY_POSTER}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      />
       <div className="gallery-overlay"><p>{label}</p></div>
     </div>
   );

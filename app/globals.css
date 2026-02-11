@@ -513,6 +513,13 @@ nav.nav-open .nav-toggle .nav-toggle-bar:nth-child(3) {
     opacity: 1;
 }
 
+/* 移动端/触屏：无 hover，始终显示标签并支持点击播放 */
+@media (hover: none) {
+    .gallery-item .gallery-overlay {
+        opacity: 1;
+    }
+}
+
 .gallery-overlay p {
     color: #fff;
     font-size: 0.85rem;
