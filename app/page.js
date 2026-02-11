@@ -3,22 +3,22 @@
 import { useState, useCallback, useRef } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 
-/** 移动端用：卡片占位图（渐变 + 播放图标），避免视频未加载时一片灰 */
-const GALLERY_POSTER =
+/** 无自定义占位图时的后备图（渐变 + 播放图标） */
+const GALLERY_POSTER_FALLBACK =
   'data:image/svg+xml,' +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9" fill="none"><rect width="16" height="9" fill="url(%23g)"/><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="%23e8e8ed"/><stop offset="1" stop-color="%23a0a0a8"/></linearGradient></defs><path d="M6 2.5v4l3.5-2-3.5-2z" fill="%23818cf8" opacity="0.9"/></svg>'
   );
 
 const GALLERY_VIDEOS = [
-  { src: '/演唱会.mp4', label: 'Concert' },
-  { src: '/厨师.mp4', label: 'Chef' },
-  { src: '/唱片.mp4', label: 'Record' },
-  { src: '/胶片.mp4', label: 'Film' },
-  { src: '/拍摄.mp4', label: 'Shooting' },
-  { src: '/樱花.mp4', label: 'Cherry blossoms' },
-  { src: '/吃饭.mp4', label: 'Dining' },
-  { src: '/花开.mp4', label: 'Bloom' },
+  { src: '/演唱会.mp4', label: 'Concert', poster: '/concert.png' },
+  { src: '/厨师.mp4', label: 'Chef', poster: '/chef.png' },
+  { src: '/唱片.mp4', label: 'Record', poster: '/record.png' },
+  { src: '/胶片.mp4', label: 'Film', poster: '/film.png' },
+  { src: '/拍摄.mp4', label: 'Shooting', poster: '/shooting.png' },
+  { src: '/樱花.mp4', label: 'Cherry blossoms', poster: '/cherry-blossoms.png' },
+  { src: '/吃饭.mp4', label: 'Dining', poster: '/dining.png' },
+  { src: '/花开.mp4', label: 'Bloom', poster: '/bloom.png' },
 ];
 
 const FAQ_ITEMS = [
@@ -29,7 +29,7 @@ const FAQ_ITEMS = [
   { q: 'What is Seedance Video?', a: '"Seedance Video" means videos created with Seedance AI tools—including Seedance-2. When we say "create a Seedance Video," we mean using this site to generate AI videos from your images.' },
 ];
 
-function GalleryItem({ src, label }) {
+function GalleryItem({ src, label, poster }) {
   const videoRef = useRef(null);
   const handleMouseEnter = useCallback((e) => e.target.play().catch(() => {}), []);
   const handleMouseLeave = useCallback((e) => {
@@ -55,7 +55,7 @@ function GalleryItem({ src, label }) {
         loop
         playsInline
         preload="metadata"
-        poster={GALLERY_POSTER}
+        poster={poster || GALLERY_POSTER_FALLBACK}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       />
@@ -234,7 +234,7 @@ export default function HomePage() {
             </div>
             <div className="gallery-grid">
               {GALLERY_VIDEOS.map((v, i) => (
-                <GalleryItem key={i} src={v.src} label={v.label} />
+                <GalleryItem key={i} src={v.src} label={v.label} poster={v.poster} />
               ))}
             </div>
           </section>
