@@ -48,7 +48,10 @@ export default function HomePage() {
   const [i2vPrompt, setI2vPrompt] = useState('');
   const [i2vImageSize, setI2vImageSize] = useState('1280x720');
   const [i2vGenerating, setI2vGenerating] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const { data: session, status } = useSession();
+
+  const closeNav = useCallback(() => setNavOpen(false), []);
 
   const showHome = useCallback((e) => {
     if (e) e.preventDefault();
@@ -138,23 +141,34 @@ export default function HomePage() {
 
   return (
     <>
-      <nav>
+      <nav className={navOpen ? 'nav-open' : ''} aria-label="Main navigation">
         <div className="logo">Seedance<span className="brand">-2</span></div>
+        <button
+          type="button"
+          className="nav-toggle"
+          onClick={() => setNavOpen((o) => !o)}
+          aria-expanded={navOpen}
+          aria-label={navOpen ? 'Close menu' : 'Open menu'}
+        >
+          <span className="nav-toggle-bar" />
+          <span className="nav-toggle-bar" />
+          <span className="nav-toggle-bar" />
+        </button>
         <div className="nav-links">
-          <a href="#" role="button" onClick={showHome}>Home</a>
-          <a href="#gallery" onClick={(e) => scrollToSection(e, 'gallery')}>Gallery</a>
-          <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')}>How it works</a>
-          <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')}>FAQ</a>
+          <a href="#" role="button" onClick={(e) => { closeNav(); showHome(e); }}>Home</a>
+          <a href="#gallery" onClick={(e) => { closeNav(); scrollToSection(e, 'gallery'); }}>Gallery</a>
+          <a href="#how-it-works" onClick={(e) => { closeNav(); scrollToSection(e, 'how-it-works'); }}>How it works</a>
+          <a href="#faq" onClick={(e) => { closeNav(); scrollToSection(e, 'faq'); }}>FAQ</a>
           {status === 'loading' ? (
             <span className="nav-user-email">Loading…</span>
           ) : session?.user ? (
             <span className="nav-user">
               <span className="nav-user-email" title={session.user.email}>{session.user.email}</span>
               {session.user.image && <img src={session.user.image} alt="" className="nav-user-avatar" />}
-              <button type="button" className="btn-login btn-logout" onClick={() => signOut()}>Sign out</button>
+              <button type="button" className="btn-login btn-logout" onClick={() => { closeNav(); signOut(); }}>Sign out</button>
             </span>
           ) : (
-            <button type="button" className="btn-login" onClick={() => signIn('google', { callbackUrl: '/' })}>Sign in with Google</button>
+            <button type="button" className="btn-login" onClick={() => { closeNav(); signIn('google', { callbackUrl: '/' }); }}>Sign in with Google</button>
           )}
         </div>
       </nav>
