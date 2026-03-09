@@ -12,25 +12,27 @@ const plusJakarta = Plus_Jakarta_Sans({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.seedance-2.info';
 
 export const metadata = {
-  title: 'Seedance Video · Image to Video | Seedance-2',
-  description:
-    'Seedance-2: Create AI videos from images. Seedance AI image-to-video generator. Free to try | seedance-2.info',
-  keywords:
-    'seedance video, seedance-2, seedance ai, AI video generator, image to video, seedance-2.info',
-  robots: { index: true, follow: true },
-  openGraph: {
-    type: 'website',
-    title: 'Seedance Video · Seedance-2 AI Image to Video',
-    description: 'Image to video. Seedance AI—create in seconds.',
-    url: `${SITE_URL}/`,
-    locale: 'en_US',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Seedance Video · Seedance-2',
-    description: 'Image to video. Seedance AI.',
-  },
-  alternates: { canonical: `${SITE_URL}/` },
+metadataBase: new URL(SITE_URL),
+title: { default: 'Seedance Video · Image to Video', template: '%s | Seedance-2' },
+description: 'Seedance-2: Create AI videos from images. Free image-to-video generator.',
+keywords: ['seedance video','seedance-2','ai video generator','image to video','seedance-2.info'],
+robots: { index: true, follow: true },
+alternates: { canonical: '/' },
+openGraph: {
+type: 'website',
+url: SITE_URL,
+title: 'Seedance Video · Image to Video',
+description: 'Create AI videos from images in seconds.',
+siteName: 'Seedance-2',
+images: [{ url: '/og/og-image.jpg', width: 1200, height: 630, alt: 'Seedance preview' }],
+locale: 'en_US'
+},
+twitter: {
+card: 'summary_large_image',
+title: 'Seedance Video · Image to Video',
+description: 'Create AI videos from images in seconds.',
+images: ['/og/og-image.jpg']
+}
 };
 
 const webAppJsonLd = {
