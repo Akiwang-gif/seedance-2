@@ -9,8 +9,12 @@ const searchParams = useSearchParams();
 useEffect(() => {
 const id = process.env.NEXT_PUBLIC_GA_ID;
 if (!id || typeof window === 'undefined' || !window.gtag) return;
-const url = pathname + (searchParams?.toString() ? ?${searchParams.toString()} : '');
+
+const qs = searchParams?.toString() || '';
+const url = qs ? ${pathname}?${qs} : pathname;
+
 window.gtag('config', id, { page_path: url });
+
 }, [pathname, searchParams]);
 
 return null;
