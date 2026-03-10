@@ -1,3 +1,5 @@
+import Script from 'next/script';
+import GA from './components/GA';
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { SessionProvider } from './components/SessionProvider';
