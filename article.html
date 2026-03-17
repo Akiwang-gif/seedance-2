@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article · Seedance-2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #fff; --text: #1d1d1f; --text-muted: #6e6e73; --border: #eee; --accent: #c0392b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+        .logo a { color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        .logo a:hover { color: var(--text-muted); }
+        .logo .site-icon { width: 32px; height: 32px; min-width: 32px; min-height: 32px; object-fit: contain; display: block; flex-shrink: 0; }
+        .back-link { font-size: 0.95rem; color: var(--text-muted); text-decoration: none; }
+        .back-link:hover { color: var(--text); }
+        .article-wrap { max-width: 800px; margin: 0 auto; padding: 2rem 2rem 3rem; }
+        .article-wrap .article-category {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+        }
+        .article-wrap .article-title { font-size: 1.75rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.75rem; }
+        .article-wrap .article-meta { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .article-wrap .article-body { font-size: 1rem; line-height: 1.7; color: var(--text); }
+        .article-wrap .article-body p { margin-bottom: 1rem; }
+        .article-wrap .article-body .article-img { margin: 1.25rem 0; border-radius: 8px; overflow: hidden; }
+        .article-wrap .article-body .article-img img,
+        .article-wrap .article-body img { max-width: 100%; height: auto; display: block; }
+        .article-wrap .article-body .article-img-wrap { margin: 1.25rem 0; }
+        .article-wrap .article-body .article-img-wrap img { display: inline-block; max-width: 100%; height: auto; border-radius: 8px; }
+        .article-nav { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 1rem; }
+        .article-nav a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+        .article-nav a:hover { color: var(--text); }
+        @media (max-width: 600px) { .site-header, .article-wrap { padding-left: 1rem; padding-right: 1rem; } }
+    </style>
+</head>
+<body>
+    <header class="site-header" role="banner">
+        <h1 class="logo">
+            <a href="index.html" aria-label="Seedance-2 Home">
+                <img src="icon.png" alt="" class="site-icon" width="32" height="32">
+                Seedance-2
+            </a>
+        </h1>
+        <a href="index.html" class="back-link">Back to Home</a>
+    </header>
+
+    <main class="article-wrap" role="main" id="articleMain">
+        <div class="article-not-found" id="notFound" style="display:none;">
+            <h1>Article not found</h1>
+            <p>The article may have been removed or the link is incorrect.</p>
+            <a href="index.html" class="back-link">Back to Home</a>
+        </div>
+        <article id="articleContent" style="display:none;">
+            <div class="article-media" id="articleMedia"></div>
+            <span class="article-category" id="articleCategory"></span>
+            <h1 class="article-title" id="articleTitle"></h1>
+            <p class="article-meta" id="articleMeta"></p>
+            <div class="article-body" id="articleBody"></div>
+            <nav class="article-nav" aria-label="Previous and next articles">
+                <a href="#" id="prevLink" class="prev">
+                    <span class="nav-label">Previous</span>
+                    <span class="nav-title" id="prevTitle">—</span>
+                </a>
+                <a href="#" id="nextLink" class="next">
+                    <span class="nav-label">Next</span>
+                    <span class="nav-title" id="nextTitle">—</span>
+                </a>
+            </nav>
+        </article>
+    </main>
+
+    <script>
+    (function() {
+        var params = new URLSearchParams(window.location.search);
+        var id = params.get('id');
+        var origin = window.location.origin;
+
+        function timeAgo(iso) {
+            if (!iso) return '';
+            var d = new Date(iso);
+            var sec = Math.floor((Date.now() - d.getTime()) / 1000);
+            if (sec < 60) return 'Just now';
+            if (sec < 3600) return Math.floor(sec / 60) + ' min ago';
+            if (sec < 86400) return Math.floor(sec / 3600) + ' hours ago';
+            if (sec < 604800) return Math.floor(sec / 86400) + ' days ago';
+            return d.toLocaleDateString();
+        }
+
+        function showNotFound() {
+            document.getElementById('notFound').style.display = 'block';
+            document.getElementById('articleContent').style.display = 'none';
+        }
+
+        function render(article, sorted, index) {
+            document.getElementById('notFound').style.display = 'none';
+            document.getElementById('articleContent').style.display = 'block';
+            document.title = (article.title || 'Article') + ' · Seedance-2';
+
+            var media = document.getElementById('articleMedia');
+            media.innerHTML = '';
+            media.style.display = 'none';
+
+            document.getElementById('articleCategory').textContent = article.category || 'News';
+            document.getElementById('articleTitle').textContent = article.title || '';
+            document.getElementById('articleMeta').textContent = (article.author ? 'By ' + article.author + ' · ' : '') + timeAgo(article.publishedAt);
+
+            var fontFamily = article.fontFamily || 'Inter';
+            var fontSize = article.fontSize || '16px';
+            var color = article.color || '#1d1d1f';
+            var fontWeight = article.fontWeight || 'normal';
+            var fontStyle = article.fontStyle || 'normal';
+            var bodyEl = document.getElementById('articleBody');
+            bodyEl.style.fontFamily = fontFamily;
+            bodyEl.style.fontSize = fontSize;
+            bodyEl.style.color = color;
+            bodyEl.style.fontWeight = fontWeight;
+            bodyEl.style.fontStyle = fontStyle;
+            if (article.bodyHtml && article.bodyHtml.trim()) {
+                bodyEl.innerHTML = article.bodyHtml.trim();
+            } else if (article.contentBlocks && article.contentBlocks.length > 0) {
+                bodyEl.innerHTML = '';
+                article.contentBlocks.forEach(function(block) {
+                    if (block.type === 'text' && block.content) {
+                        var p = document.createElement('p');
+                        p.textContent = block.content;
+                        p.style.fontFamily = block.fontFamily || fontFamily;
+                        p.style.fontSize = block.fontSize || fontSize;
+                        p.style.color = block.color || color;
+                        p.style.fontWeight = block.fontWeight || fontWeight;
+                        p.style.fontStyle = block.fontStyle || fontStyle;
+                        bodyEl.appendChild(p);
+                    } else if (block.type === 'image' && block.url) {
+                        var div = document.createElement('div');
+                        div.className = 'article-img';
+                        div.innerHTML = '<img src="' + block.url + '" alt="">';
+                        bodyEl.appendChild(div);
+                    }
+                });
+            } else {
+                bodyEl.textContent = article.description || '';
+            }
+
+            var prevLink = document.getElementById('prevLink');
+            var nextLink = document.getElementById('nextLink');
+            var prevTitle = document.getElementById('prevTitle');
+            var nextTitle = document.getElementById('nextTitle');
+            var prevIndex = index + 1;
+            var nextIndex = index - 1;
+            if (prevIndex < sorted.length) {
+                var prev = sorted[prevIndex];
+                prevLink.href = 'article.html?id=' + encodeURIComponent(prev.id);
+                prevTitle.textContent = prev.title || 'Previous article';
+                prevLink.style.display = 'block';
+            } else {
+                prevLink.href = '#';
+                prevLink.style.display = 'none';
+            }
+            if (nextIndex >= 0) {
+                var next = sorted[nextIndex];
+                nextLink.href = 'article.html?id=' + encodeURIComponent(next.id);
+                nextTitle.textContent = next.title || 'Next article';
+                nextLink.style.display = 'block';
+            } else {
+                nextLink.href = '#';
+                nextLink.style.display = 'none';
+            }
+        }
+
+        if (!id) {
+            showNotFound();
+        } else {
+            fetch(origin + '/api/articles')
+                .then(function(r) { return r.json(); })
+                .then(function(articles) {
+                    if (!Array.isArray(articles)) { showNotFound(); return; }
+                    var sorted = articles.slice().sort(function(a, b) {
+                        return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
+                    });
+                    var index = sorted.findIndex(function(a) { return a.id === id; });
+                    if (index === -1) { showNotFound(); return; }
+                    render(sorted[index], sorted, index);
+                })
+                .catch(function() { showNotFound(); });
+        }
+    })();
+    </script>
+</body>
+</html>

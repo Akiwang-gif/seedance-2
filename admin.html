@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin · Upload Articles · Seedance-2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #f5f5f5; --text: #1d1d1f; --text-muted: #6e6e73; --border: #ddd; --accent: #c0392b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem; }
+        .wrap { max-width: 720px; margin: 0 auto; }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+        label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.35rem; }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font: inherit;
+            margin-bottom: 1rem;
+        }
+        textarea { min-height: 100px; resize: vertical; }
+        button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.65rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .msg { margin-top: 0.75rem; font-size: 0.9rem; }
+        .msg.success { color: #0a0; }
+        .msg.error { color: var(--accent); }
+        .list { margin-top: 2rem; }
+        .list h2 { margin-bottom: 1rem; }
+        .item {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .item-info { flex: 1; min-width: 0; }
+        .item-title { font-weight: 600; margin-bottom: 0.25rem; }
+        .item-meta { font-size: 0.8rem; color: var(--text-muted); }
+        .item-actions { flex-shrink: 0; }
+        .btn-edit { background: var(--accent); color: #fff; font-size: 0.85rem; padding: 0.35rem 0.6rem; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-edit:hover { opacity: 0.9; }
+        .btn-del { background: transparent; color: var(--text-muted); font-size: 0.85rem; padding: 0.35rem 0.6rem; border: none; cursor: pointer; }
+        .btn-del:hover { color: var(--accent); }
+        .row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .half { flex: 1; min-width: 200px; }
+        .sublabel { font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
+        .format-section { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+        .format-section legend { font-size: 0.85rem; font-weight: 600; padding: 0 0.5rem; }
+        .format-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+        .format-group { min-width: 100px; }
+        .format-group .sublabel { display: block; margin-bottom: 0.35rem; }
+        .check-row { display: flex; gap: 1rem; align-items: center; }
+        .check-row label { display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0; font-weight: 400; }
+        .preview-section { margin-bottom: 1.5rem; }
+        .preview-section h2 { font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--text-muted); }
+        .preview-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; max-width: 400px; border: 1px solid var(--border); }
+        .preview-card .preview-media { aspect-ratio: 16/10; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.85rem; }
+        .preview-card .preview-media img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-card .preview-body { padding: 1rem; }
+        .preview-card .preview-category { display: inline-block; background: #e8e8e8; color: var(--text); font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 6px; margin-bottom: 0.5rem; }
+        .preview-card .preview-title { font-size: 1rem; margin-bottom: 0.35rem; line-height: 1.3; min-height: 1.3em; }
+        .preview-card .preview-meta { font-size: 0.8rem; color: var(--text-muted); }
+        .editor-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; margin-bottom: 1rem; }
+        .editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); background: #fafafa; }
+        .editor-toolbar select { width: auto; min-width: 100px; margin: 0; padding: 0.4rem 0.5rem; }
+        .editor-toolbar .tool-btn { background: #fff; color: var(--text); padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+        .editor-toolbar .tool-btn:hover { background: #eee; }
+        .editor-toolbar #toolColor { width: 32px; height: 28px; padding: 2px; margin: 0; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+        .editor-toolbar .toolbar-sep { color: var(--border); margin: 0 0.15rem; font-size: 0.9rem; }
+        .editor-toolbar #toolInsertImage { background: #e8e8e8; color: var(--text); }
+        .editor-toolbar .tool-btn-preview { margin-left: auto; background: #e0e0e0; color: var(--text); }
+        .editor-body .article-img-wrap { margin: 0.75rem 0; }
+        .editor-body .article-img-wrap img { display: inline-block; }
+        .editor-body { min-height: 320px; padding: 1rem 1.25rem; font-size: 16px; line-height: 1.6; outline: none; }
+        .editor-body:empty::before { content: attr(data-placeholder); color: var(--text-muted); }
+        .editor-body p { margin-bottom: 0.75rem; }
+        .editor-body img { max-width: 100%; height: auto; display: block; border-radius: 6px; margin: 0.75rem 0; }
+        .editor-body img.selected-for-size { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .image-size-bar { display: inline-flex; gap: 0.35rem; margin: 0.25rem 0 0.75rem 0; padding: 0.35rem 0.5rem; background: #f0f0f0; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap; }
+        .image-size-bar span { font-size: 0.8rem; color: var(--text-muted); margin-right: 0.25rem; align-self: center; }
+        .image-size-bar button { padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #fff; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; color: var(--text); }
+        .image-size-bar button:hover { background: #e8e8e8; }
+        .image-size-bar .bar-row { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+        .image-size-bar .bar-row + .bar-row { margin-top: 0.35rem; padding-top: 0.35rem; border-top: 1px solid var(--border); }
+        .preview-overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; padding: 2rem; box-sizing: border-box; }
+        .preview-overlay.show { display: flex; }
+        .preview-overlay-inner { background: #fff; border-radius: 12px; max-width: 640px; width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+        .preview-overlay-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .preview-overlay-header h2 { font-size: 1rem; margin: 0; }
+        .preview-overlay-close { background: #e8e8e8; color: var(--text); border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .preview-overlay-close:hover { background: #ddd; }
+        .preview-overlay-body { padding: 1.25rem; overflow: auto; flex: 1; font-size: 1rem; line-height: 1.7; }
+        .preview-overlay-body .inner-preview-category { display: inline-block; background: #e8e8e8; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 6px; margin-bottom: 0.5rem; }
+        .preview-overlay-body .inner-preview-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .preview-overlay-body .inner-preview-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+        .preview-overlay-body .inner-preview-content p { margin-bottom: 1rem; }
+        .preview-overlay-body .inner-preview-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1rem 0; display: block; }
+        .preview-overlay-body .inner-preview-content .article-img-wrap { margin: 1rem 0; }
+        .preview-overlay-body .inner-preview-content .article-img-wrap img { display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>Upload Articles</h1>
+        <p class="sub">Seedance-2 admin. <a href="index.html">Back to Home</a>. Start server: <strong>restart-cms-5000.bat</strong> (recommended) or start-cms.bat</p>
+
+        <div class="card">
+            <h2 id="formTitle">New Article</h2>
+            <p id="formSub" class="sublabel" style="display:none; margin-bottom:1rem;"><button type="button" id="cancelEditBtn" class="tool-btn">Cancel edit</button> — editing existing article</p>
+            <form id="form">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" required placeholder="Article title">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="Politics">Politics</option>
+                    <option value="Business">Business</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Culture">Culture</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Environment">Environment</option>
+                    <option value="News">News</option>
+                </select>
+                <label for="author">Author</label>
+                <input type="text" id="author" name="author" placeholder="Author name">
+
+                <label>Article body</label>
+                <p class="sublabel" style="margin-bottom:0.5rem;">Edit directly below. The first image in the content will be used as the cover on the homepage.</p>
+                <div class="editor-wrap">
+                    <div class="editor-toolbar" role="toolbar">
+                        <select id="toolFont" title="Font" aria-label="Font">
+                            <option value="Inter">Inter</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Arial">Arial</option>
+                            <option value="'Times New Roman'">Times New Roman</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Helvetica">Helvetica</option>
+                        </select>
+                        <select id="toolSize" title="Size" aria-label="Size">
+                            <option value="14px">14px</option>
+                            <option value="16px" selected>16px</option>
+                            <option value="18px">18px</option>
+                            <option value="20px">20px</option>
+                            <option value="24px">24px</option>
+                        </select>
+                        <button type="button" class="tool-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+                        <button type="button" class="tool-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+                        <button type="button" class="tool-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+                        <input type="color" id="toolColor" title="Color" value="#1d1d1f">
+                        <span class="toolbar-sep">|</span>
+                        <button type="button" class="tool-btn" data-cmd="justifyLeft" title="Align left">Left</button>
+                        <button type="button" class="tool-btn" data-cmd="justifyCenter" title="Align center">Center</button>
+                        <button type="button" class="tool-btn" data-cmd="justifyRight" title="Align right">Right</button>
+                        <button type="button" class="tool-btn" data-cmd="justifyFull" title="Justify">Justify</button>
+                        <span class="toolbar-sep">|</span>
+                        <button type="button" id="toolInsertImage" title="Insert image">Image</button>
+                        <input type="file" id="toolImageInput" accept="image/*" hidden>
+                        <button type="button" id="btnPreview" class="tool-btn-preview" title="Preview">Preview</button>
+                    </div>
+                    <div id="articleBody" class="editor-body" contenteditable="true" data-placeholder="Type here or paste images..."></div>
+                </div>
+
+                <fieldset class="format-section">
+                    <legend>Homepage card title format</legend>
+                    <p class="sublabel" style="margin-bottom:0.5rem;">Format of the title shown on the homepage card only.</p>
+                    <div class="format-row">
+                        <div class="format-group">
+                            <label for="cardTitleFontFamily" class="sublabel">Font</label>
+                            <select id="cardTitleFontFamily" name="cardTitleFontFamily">
+                                <option value="Inter">Inter</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Arial">Arial</option>
+                                <option value="'Times New Roman'">Times New Roman</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Helvetica">Helvetica</option>
+                            </select>
+                        </div>
+                        <div class="format-group">
+                            <label for="cardTitleFontSize" class="sublabel">Size</label>
+                            <select id="cardTitleFontSize" name="cardTitleFontSize">
+                                <option value="14px">14px</option>
+                                <option value="16px" selected>16px</option>
+                                <option value="18px">18px</option>
+                                <option value="20px">20px</option>
+                                <option value="24px">24px</option>
+                            </select>
+                        </div>
+                        <div class="format-group">
+                            <label for="cardTitleColor" class="sublabel">Color</label>
+                            <input type="color" id="cardTitleColor" name="cardTitleColor" value="#1d1d1f" style="height:38px;padding:2px;">
+                        </div>
+                        <div class="format-group">
+                            <label class="sublabel">Style</label>
+                            <div class="check-row">
+                                <label><input type="checkbox" id="cardTitleFontWeight" name="cardTitleFontWeight" value="bold"> Bold</label>
+                                <label><input type="checkbox" id="cardTitleFontStyle" name="cardTitleFontStyle" value="italic"> Italic</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <button type="submit" id="submitBtn">Publish Article</button>
+                <p class="msg" id="msg" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+
+        <div class="card preview-section">
+            <h2>Preview (homepage card)</h2>
+            <p class="sublabel" style="margin-bottom:0.75rem;">How this article will look on the homepage. Only the first image is shown as cover.</p>
+            <div class="preview-card" id="previewCard">
+                <div class="preview-media" id="previewMedia">No image</div>
+                <div class="preview-body">
+                    <span class="preview-category" id="previewCategory">News</span>
+                    <div class="preview-title" id="previewTitle">Article title will appear here</div>
+                    <div class="preview-meta" id="previewMeta">By Author</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="list">
+            <h2>Published Articles</h2>
+            <div id="list"></div>
+        </div>
+    </div>
+
+    <div id="previewOverlay" class="preview-overlay" aria-hidden="true">
+        <div class="preview-overlay-inner">
+            <div class="preview-overlay-header">
+                <h2>Article inner page preview</h2>
+                <button type="button" id="previewOverlayClose" class="preview-overlay-close">Back to edit</button>
+            </div>
+            <div class="preview-overlay-body" id="previewOverlayBody">
+                <div class="inner-preview-category" id="previewOverlayCategory">News</div>
+                <div class="inner-preview-title" id="previewOverlayTitle">Article title</div>
+                <div class="inner-preview-meta" id="previewOverlayMeta">By Author</div>
+                <div class="inner-preview-content" id="previewOverlayContent"><p>Content will appear here.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var form = document.getElementById('form');
+            var submitBtn = document.getElementById('submitBtn');
+            var msg = document.getElementById('msg');
+            var listEl = document.getElementById('list');
+            var formTitle = document.getElementById('formTitle');
+            var formSub = document.getElementById('formSub');
+            var cancelEditBtn = document.getElementById('cancelEditBtn');
+            var editingArticleId = null;
+
+            function apiBase() {
+                return window.location.origin;
+            }
+
+            function showMessage(text, isError) {
+                msg.textContent = text;
+                msg.className = 'msg ' + (isError ? 'error' : 'success');
+            }
+
+            function loadList() {
+                fetch(apiBase() + '/api/articles')
+                    .then(function(r) { return r.json(); })
+                    .then(function(articles) {
+                        if (!articles.length) {
+                            listEl.innerHTML = '<p class="item-meta">No articles yet. Publish one above.</p>';
+                            return;
+                        }
+                        listEl.innerHTML = articles.map(function(a) {
+                            var date = a.publishedAt ? new Date(a.publishedAt).toLocaleDateString() : '';
+                            return '<div class="item" data-id="' + (a.id || '') + '">' +
+                                '<div class="item-info">' +
+                                '<div class="item-title">' + (a.title || '(No title)') + '</div>' +
+                                '<div class="item-meta">' + (a.category || '') + ' · ' + (a.author || '') + ' · ' + date + '</div>' +
+                                '</div>' +
+                                '<div class="item-actions">' +
+                                '<button type="button" class="btn-edit" data-id="' + (a.id || '') + '" aria-label="Edit">Edit</button> ' +
+                                '<button type="button" class="btn-del" data-id="' + (a.id || '') + '" aria-label="Delete">Delete</button>' +
+                                '</div></div>';
+                        }).join('');
+                        listEl.querySelectorAll('.btn-del').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var id = btn.getAttribute('data-id');
+                                if (!id || !confirm('Delete this article?')) return;
+                                fetch(apiBase() + '/api/articles/' + id, { method: 'DELETE' })
+                                    .then(function(r) { return r.json(); })
+                                    .then(function() { loadList(); })
+                                    .catch(function() { showMessage('Failed to delete.', true); });
+                            });
+                        });
+                        listEl.querySelectorAll('.btn-edit').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var id = btn.getAttribute('data-id');
+                                if (!id) return;
+                                loadArticleForEdit(id);
+                            });
+                        });
+                    })
+                    .catch(function() {
+                        listEl.innerHTML = '<p class="msg error">Could not load articles. Is the CMS server running? (node server-cms.js)</p>';
+                    });
+            }
+
+            function setEditMode(id) {
+                editingArticleId = id;
+                formTitle.textContent = 'Edit Article';
+                if (formSub) formSub.style.display = 'block';
+                if (submitBtn) submitBtn.textContent = 'Update Article';
+            }
+            function clearEditMode() {
+                editingArticleId = null;
+                formTitle.textContent = 'New Article';
+                if (formSub) formSub.style.display = 'none';
+                if (submitBtn) submitBtn.textContent = 'Publish Article';
+            }
+            function loadArticleForEdit(id) {
+                fetch(apiBase() + '/api/articles/' + id)
+                    .then(function(r) {
+                        if (!r.ok) throw new Error('Article not found');
+                        return r.json();
+                    })
+                    .then(function(a) {
+                        document.getElementById('title').value = a.title || '';
+                        document.getElementById('category').value = a.category || 'News';
+                        document.getElementById('author').value = a.author || '';
+                        articleBody.innerHTML = (a.bodyHtml || '').trim() || '';
+                        document.getElementById('cardTitleFontFamily').value = a.cardTitleFontFamily || 'Inter';
+                        document.getElementById('cardTitleFontSize').value = a.cardTitleFontSize || '16px';
+                        document.getElementById('cardTitleColor').value = a.cardTitleColor || '#1d1d1f';
+                        var w = document.getElementById('cardTitleFontWeight');
+                        var i = document.getElementById('cardTitleFontStyle');
+                        if (w) w.checked = (a.cardTitleFontWeight === 'bold');
+                        if (i) i.checked = (a.cardTitleFontStyle === 'italic');
+                        setEditMode(a.id);
+                        updatePreview();
+                        msg.textContent = '';
+                        document.getElementById('form').scrollIntoView({ behavior: 'smooth' });
+                    })
+                    .catch(function() { showMessage('Could not load article.', true); });
+            }
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', function() {
+                    clearEditMode();
+                    form.reset();
+                    document.getElementById('cardTitleFontSize').value = '16px';
+                    document.getElementById('cardTitleColor').value = '#1d1d1f';
+                    document.getElementById('cardTitleFontWeight').checked = false;
+                    document.getElementById('cardTitleFontStyle').checked = false;
+                    articleBody.innerHTML = '';
+                    updatePreview();
+                    msg.textContent = '';
+                });
+            }
+
+            function getCardTitleFormat() {
+                var w = document.getElementById('cardTitleFontWeight');
+                var i = document.getElementById('cardTitleFontStyle');
+                return {
+                    fontFamily: document.getElementById('cardTitleFontFamily').value,
+                    fontSize: document.getElementById('cardTitleFontSize').value,
+                    color: document.getElementById('cardTitleColor').value,
+                    fontWeight: (w && w.checked) ? 'bold' : 'normal',
+                    fontStyle: (i && i.checked) ? 'italic' : 'normal'
+                };
+            }
+
+            var articleBody = document.getElementById('articleBody');
+            var previewObjectUrl = null;
+
+            function firstImageFromEditor() {
+                var first = articleBody.querySelector('img');
+                return first ? first.src : null;
+            }
+
+            function updatePreview() {
+                var title = document.getElementById('title').value.trim();
+                var category = document.getElementById('category').value || 'News';
+                var author = document.getElementById('author').value.trim();
+                var cardFmt = getCardTitleFormat();
+                document.getElementById('previewCategory').textContent = category;
+                document.getElementById('previewTitle').textContent = title || 'Article title will appear here';
+                document.getElementById('previewMeta').textContent = author ? 'By ' + author : 'By Author';
+                document.getElementById('previewTitle').style.fontFamily = cardFmt.fontFamily;
+                document.getElementById('previewTitle').style.fontSize = cardFmt.fontSize;
+                document.getElementById('previewTitle').style.color = cardFmt.color;
+                document.getElementById('previewTitle').style.fontWeight = cardFmt.fontWeight;
+                document.getElementById('previewTitle').style.fontStyle = cardFmt.fontStyle;
+                var mediaEl = document.getElementById('previewMedia');
+                if (previewObjectUrl) { URL.revokeObjectURL(previewObjectUrl); previewObjectUrl = null; }
+                var firstImg = firstImageFromEditor();
+                if (firstImg && firstImg.indexOf('data:') !== 0) {
+                    if (firstImg.indexOf('blob:') === 0) previewObjectUrl = firstImg;
+                    mediaEl.innerHTML = '<img src="' + firstImg + '" alt="">';
+                } else {
+                    mediaEl.innerHTML = 'No image';
+                }
+            }
+
+            function applyCommand(cmd, value) {
+                articleBody.focus();
+                document.execCommand(cmd, false, value !== undefined && value !== null ? value : null);
+            }
+
+            document.querySelectorAll('.editor-toolbar .tool-btn[data-cmd]').forEach(function(btn) {
+                btn.addEventListener('click', function() { applyCommand(btn.getAttribute('data-cmd')); });
+            });
+            document.getElementById('toolFont').addEventListener('change', function() { applyCommand('fontName', this.value); });
+            document.getElementById('toolSize').addEventListener('change', function() {
+                var px = this.value;
+                var n = '3';
+                if (px === '14px') n = '2'; else if (px === '16px') n = '3'; else if (px === '18px') n = '4'; else if (px === '20px') n = '5'; else if (px === '24px') n = '6';
+                applyCommand('fontSize', n);
+            });
+            document.getElementById('toolColor').addEventListener('input', function() { applyCommand('foreColor', this.value); });
+
+            function hideImageSizeBar() {
+                var bar = document.getElementById('imageSizeBar');
+                if (bar) bar.remove();
+                if (articleBody) articleBody.querySelectorAll('img.selected-for-size').forEach(function(im) { im.classList.remove('selected-for-size'); });
+            }
+            function wrapImageForAlign(img, align) {
+                var wrap = img.closest && img.closest('.article-img-wrap');
+                if (wrap) {
+                    wrap.style.textAlign = align;
+                } else {
+                    wrap = document.createElement('div');
+                    wrap.className = 'article-img-wrap';
+                    wrap.style.textAlign = align;
+                    img.parentNode.insertBefore(wrap, img);
+                    wrap.appendChild(img);
+                }
+                img.style.display = 'inline-block';
+            }
+            function showImageSizeBar(img) {
+                hideImageSizeBar();
+                if (!img || img.nodeName !== 'IMG') return;
+                img.classList.add('selected-for-size');
+                var bar = document.createElement('div');
+                bar.id = 'imageSizeBar';
+                bar.className = 'image-size-bar';
+                var row1 = document.createElement('div');
+                row1.className = 'bar-row';
+                row1.innerHTML = '<span>Size:</span>';
+                ['25%', '50%', '75%', '100%'].forEach(function(val) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = val;
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        img.style.maxWidth = val;
+                        img.style.width = val;
+                        img.style.height = 'auto';
+                        hideImageSizeBar();
+                        updatePreview();
+                    });
+                    row1.appendChild(btn);
+                });
+                bar.appendChild(row1);
+                var row2 = document.createElement('div');
+                row2.className = 'bar-row';
+                row2.innerHTML = '<span>Align:</span>';
+                [{ v: 'left', l: 'Left' }, { v: 'center', l: 'Center' }, { v: 'right', l: 'Right' }].forEach(function(o) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = o.l;
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        wrapImageForAlign(img, o.v);
+                        hideImageSizeBar();
+                        updatePreview();
+                    });
+                    row2.appendChild(btn);
+                });
+                bar.appendChild(row2);
+                img.parentNode.insertBefore(bar, img.nextSibling);
+            }
+
+            var savedSelection = null;
+            function saveSelection() {
+                var sel = window.getSelection();
+                if (!sel || sel.rangeCount === 0) return null;
+                try { return sel.getRangeAt(0).cloneRange(); } catch (e) { return null; }
+            }
+            function insertImageAtSelection(url) {
+                articleBody.focus();
+                var inserted = false;
+                if (savedSelection) {
+                    try {
+                        var img = document.createElement('img');
+                        img.src = url;
+                        img.alt = '';
+                        img.style.maxWidth = '100%';
+                        img.style.height = 'auto';
+                        img.style.display = 'block';
+                        img.style.borderRadius = '6px';
+                        img.style.margin = '0.75rem 0';
+                        savedSelection.deleteContents();
+                        savedSelection.insertNode(img);
+                        inserted = true;
+                    } catch (e) {}
+                    savedSelection = null;
+                }
+                if (!inserted) {
+                    var sel = window.getSelection();
+                    if (sel && sel.rangeCount > 0) {
+                        try {
+                            var range = sel.getRangeAt(0);
+                            var img2 = document.createElement('img');
+                            img2.src = url;
+                            img2.alt = '';
+                            img2.style.maxWidth = '100%';
+                            img2.style.height = 'auto';
+                            img2.style.display = 'block';
+                            img2.style.borderRadius = '6px';
+                            img2.style.margin = '0.75rem 0';
+                            range.deleteContents();
+                            range.insertNode(img2);
+                            inserted = true;
+                        } catch (e2) {}
+                    }
+                }
+                if (!inserted) {
+                    try { document.execCommand('insertImage', false, url); inserted = true; } catch (e3) {}
+                }
+                if (!inserted) {
+                    var img3 = document.createElement('img');
+                    img3.src = url;
+                    img3.alt = '';
+                    img3.style.maxWidth = '100%';
+                    img3.style.height = 'auto';
+                    img3.style.display = 'block';
+                    img3.style.borderRadius = '6px';
+                    img3.style.margin = '0.75rem 0';
+                    articleBody.appendChild(img3);
+                }
+                updatePreview();
+            }
+            document.getElementById('toolInsertImage').addEventListener('mousedown', function() { savedSelection = saveSelection(); });
+            document.getElementById('toolInsertImage').addEventListener('click', function() {
+                if (!savedSelection) { articleBody.focus(); savedSelection = saveSelection(); }
+                document.getElementById('toolImageInput').click();
+            });
+            document.getElementById('toolImageInput').addEventListener('change', function() {
+                var file = this.files && this.files[0];
+                this.value = '';
+                if (!file || !file.type.match(/^image\//)) return;
+                var fd = new FormData();
+                fd.append('image', file);
+                fetch(apiBase() + '/api/upload-image', { method: 'POST', body: fd })
+                    .then(function(r) {
+                        return r.text().then(function(text) {
+                            if (!r.ok) {
+                                var msg = r.status === 404 ? 'Upload API not found (404). Open from http://localhost:5000/admin.html and restart CMS: node server-cms.js' : (text || 'Upload failed');
+                                throw new Error(msg);
+                            }
+                            try { return JSON.parse(text); } catch (e) { throw new Error(text || 'Invalid response'); }
+                        });
+                    })
+                    .then(function(data) {
+                        var url = (window.location.origin || '') + (data.url || '');
+                        insertImageAtSelection(url);
+                        showMessage('Image inserted.');
+                    })
+                    .catch(function(err) { showMessage('Image upload failed: ' + (err.message || 'Unknown error'), true); });
+            });
+            articleBody.addEventListener('click', function(e) {
+                if (e.target && e.target.nodeName === 'IMG') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showImageSizeBar(e.target);
+                } else if (e.target && e.target.id !== 'imageSizeBar' && !e.target.closest('.image-size-bar')) {
+                    hideImageSizeBar();
+                }
+            });
+            articleBody.addEventListener('paste', function(e) {
+                var items = e.clipboardData && e.clipboardData.items;
+                if (!items) return;
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        var file = items[i].getAsFile();
+                        if (!file) return;
+                        var fd = new FormData();
+                        fd.append('image', file);
+                        fetch(apiBase() + '/api/upload-image', { method: 'POST', body: fd })
+                            .then(function(r) { if (!r.ok) throw new Error('Upload failed'); return r.json(); })
+                            .then(function(data) { insertImageAtSelection((window.location.origin || '') + (data.url || '')); })
+                            .catch(function() { showMessage('Image paste upload failed.', true); });
+                        return;
+                    }
+                }
+            });
+            articleBody.addEventListener('input', function() { updatePreview(); });
+
+            ['title', 'category', 'author', 'cardTitleFontFamily', 'cardTitleFontSize', 'cardTitleColor', 'cardTitleFontWeight', 'cardTitleFontStyle'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                if (el.type === 'checkbox') el.addEventListener('change', updatePreview);
+                else { el.addEventListener('input', updatePreview); el.addEventListener('change', updatePreview); }
+            });
+            updatePreview();
+
+            function openInnerPreview() {
+                hideImageSizeBar();
+                document.getElementById('previewOverlayCategory').textContent = document.getElementById('category').value || 'News';
+                document.getElementById('previewOverlayTitle').textContent = document.getElementById('title').value.trim() || 'Article title';
+                document.getElementById('previewOverlayMeta').textContent = document.getElementById('author').value.trim() ? 'By ' + document.getElementById('author').value.trim() : 'By Author';
+                document.getElementById('previewOverlayContent').innerHTML = articleBody.innerHTML.trim() || '<p>No content yet.</p>';
+                document.getElementById('previewOverlay').classList.add('show');
+                document.getElementById('previewOverlay').setAttribute('aria-hidden', 'false');
+            }
+            function closeInnerPreview() {
+                document.getElementById('previewOverlay').classList.remove('show');
+                document.getElementById('previewOverlay').setAttribute('aria-hidden', 'true');
+            }
+            document.getElementById('btnPreview').addEventListener('click', openInnerPreview);
+            document.getElementById('previewOverlayClose').addEventListener('click', closeInnerPreview);
+            document.getElementById('previewOverlay').addEventListener('click', function(e) {
+                if (e.target === document.getElementById('previewOverlay')) closeInnerPreview();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('previewOverlay').classList.contains('show')) closeInnerPreview();
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitBtn.disabled = true;
+                msg.textContent = '';
+                hideImageSizeBar();
+                var bodyHtml = articleBody.innerHTML.trim();
+                var cardFmt = getCardTitleFormat();
+                var payload = {
+                    title: document.getElementById('title').value,
+                    description: '',
+                    category: document.getElementById('category').value,
+                    author: document.getElementById('author').value,
+                    cardTitleFontFamily: cardFmt.fontFamily,
+                    cardTitleFontSize: cardFmt.fontSize,
+                    cardTitleColor: cardFmt.color,
+                    cardTitleFontWeight: cardFmt.fontWeight,
+                    cardTitleFontStyle: cardFmt.fontStyle
+                };
+                if (bodyHtml) payload.bodyHtml = bodyHtml;
+                var url = apiBase() + '/api/articles';
+                var method = 'POST';
+                if (editingArticleId) {
+                    url = apiBase() + '/api/articles/' + editingArticleId;
+                    method = 'PUT';
+                }
+                fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+                    .then(function(r) { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+                    .then(function() {
+                        if (editingArticleId) {
+                            showMessage('Article updated.');
+                            clearEditMode();
+                        } else {
+                            showMessage('Article published.');
+                        }
+                        form.reset();
+                        document.getElementById('cardTitleFontSize').value = '16px';
+                        document.getElementById('cardTitleColor').value = '#1d1d1f';
+                        document.getElementById('cardTitleFontWeight').checked = false;
+                        document.getElementById('cardTitleFontStyle').checked = false;
+                        articleBody.innerHTML = '';
+                        updatePreview();
+                        loadList();
+                    })
+                    .catch(function(err) { showMessage((editingArticleId ? 'Failed to update: ' : 'Failed to publish: ') + (err.message || 'Unknown error'), true); })
+                    .finally(function() { submitBtn.disabled = false; });
+            });
+
+            loadList();
+        })();
+    </script>
+</body>
+</html>
