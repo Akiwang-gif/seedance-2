@@ -1,0 +1,9 @@
+# Render Blueprint: deploy Seedance-2 (static site + CMS API)
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: seedance-2
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /

@@ -1,65 +1,49 @@
-# 部署与更新说明（Vercel）
+# 部署说明 / Deploy Guide
 
-## 一、更新线上部署
+## 方式一：Render（推荐，免费）
 
-代码已推送到 GitHub 后，按你当前使用的方式操作其一即可。
+网站含 Node 后端（CMS 接口），用 [Render](https://render.com) 可一键部署前后端。
 
-### 方式 A：已用 Vercel 连接 GitHub
+### 步骤
 
-1. 打开 [Vercel Dashboard](https://vercel.com/dashboard)，进入本项目 **seedance-2**。
-2. 每次向 **main** 分支 `git push` 后，Vercel 会自动触发一次部署。
-3. 在项目 **Deployments** 里可看最新部署状态；完成后线上即为最新代码。
+1. 打开 **https://render.com**，用 GitHub 登录。
+2. 点击 **New** → **Blueprint**（或 **Web Service**）。
+3. **Connect repository**：选择 `Akiwang-gif/seedance-2`。
+4. 若用 Blueprint：
+   - Render 会识别仓库根目录的 `render.yaml`，自动创建 Web 服务。
+   - 直接点 **Apply** 即可。
+5. 若手动建 Web Service：
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`（已配置为 `node server-cms.js`）
+   - **Instance Type**: 选 Free。
+6. 部署完成后会得到一个地址，例如：  
+   `https://seedance-2-xxxx.onrender.com`  
+   首页、文章页、后台均可在此域名下使用。
 
-### 方式 B：手动部署
+### 注意
 
-在项目根目录执行：
+- **免费实例** 一段时间无访问会休眠，首次打开可能需等待几十秒。
+- 文章与上传图片存在 Render 实例磁盘，**重新部署或实例重建会清空**。若需持久化，可后续接入数据库与对象存储。
+
+---
+
+## 方式二：仅静态站（GitHub Pages）
+
+若只部署静态页面（无后台、无文章接口）：
+
+1. 仓库 **Settings** → **Pages** → Source 选 **GitHub Actions**。
+2. 在仓库根目录创建 `.github/workflows/deploy-pages.yml`，用 workflow 把 `index.html`、`article.html` 等静态文件发布到 GitHub Pages。
+
+注意：这样部署后首页文章列表为空（无 `/api/articles`），仅适合做展示或配合其它后端使用。
+
+---
+
+## 本地运行
 
 ```bash
-npx vercel --prod
+cd seedance-2
+npm install
+npm start
 ```
 
-按提示登录/选项目即可发布到生产环境。
-
----
-
-## 二、线上环境变量（必须配置才能登录）
-
-在 Vercel 项目里：**Settings → Environment Variables**，为 **Production** 添加以下变量（值从本地 `.env.local` 复制，其中 `NEXTAUTH_URL` 改为线上域名）：
-
-```
-NEXTAUTH_URL
-NEXTAUTH_SECRET
-GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET
-DATABASE_URL
-SILICONFLOW_API_KEY
-```
-
-| 变量名 | 说明 | 示例值 |
-|--------|------|--------|
-| `NEXTAUTH_URL` | 线上站点地址（必须与访问域名一致） | `https://seedance-2.info` 或 `https://www.seedance-2.info` |
-| `NEXTAUTH_SECRET` | 与本地一致的随机密钥 | 同 `.env.local` 里的值 |
-| `GOOGLE_CLIENT_ID` | Google OAuth 客户端 ID | 同 `.env.local` |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth 客户端密钥 | 同 `.env.local` |
-| `DATABASE_URL` | Neon 数据库连接串 | 同 `.env.local` |
-| `SILICONFLOW_API_KEY` | 视频 API 密钥（若用） | 同 `.env.local` |
-
-**注意：**
-
-- `NEXTAUTH_URL` 填你实际访问的域名（例如 `https://seedance-2.info`），不要带结尾斜杠。
-- 修改环境变量后需在 **Deployments** 里对最新部署点 **Redeploy** 才会生效。
-
----
-
-## 三、Google 控制台（线上登录）
-
-你已在「已授权的重定向 URI」里加了：
-
-- `https://seedance-2.info/api/auth/callback/google`
-
-若实际访问的是 **www** 域名（`https://www.seedance-2.info`），请同时：
-
-1. 在 Google 控制台添加：`https://www.seedance-2.info/api/auth/callback/google`
-2. 在 Vercel 里把 `NEXTAUTH_URL` 设为 `https://www.seedance-2.info`
-
-这样线上即可使用 Google 登录。
+浏览器打开：http://localhost:5000 （首页）、http://localhost:5000/admin.html （后台）。
