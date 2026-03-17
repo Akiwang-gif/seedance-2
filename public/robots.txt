@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://seedance-2.info/sitemap.xml
