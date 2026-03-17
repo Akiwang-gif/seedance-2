@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
+    "@vercel/blob": "^0.24.0",
+    "@vercel/kv": "^1.0.0",
     "formidable": "^3.5.4",
     "next": "^14.2.0",
     "next-auth": "^4.24.13",

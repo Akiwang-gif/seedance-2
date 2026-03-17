@@ -1,6 +1,30 @@
 # 部署说明 / Deploy Guide
 
-## 方式一：Render（推荐，免费）
+## 方式一：Vercel（推荐，已绑定 GitHub）
+
+网站已配置为在 Vercel 上运行：静态页面 + Serverless API（文章存 Vercel KV，图片存 Vercel Blob）。
+
+### 步骤
+
+1. 打开 **https://vercel.com**，用 GitHub 登录。
+2. 点击 **Add New** → **Project**，选择仓库 **Akiwang-gif/seedance-2**。
+3. **Framework Preset** 保持为 **Other**（或选 None），无需改 Build 命令。
+4. 在项目 **Settings** → **Environment Variables** 无需手动填 KV/Blob（见下）。
+5. 在 Vercel 项目内：
+   - **Storage** → 创建 **KV (Redis)**，绑定到本项目（会自动注入 `KV_*` 环境变量）。
+   - **Storage** → 创建 **Blob**，绑定到本项目（会自动注入 `BLOB_READ_WRITE_TOKEN`）。
+6. 点击 **Deploy**。部署完成后会得到地址，例如：  
+   `https://seedance-2-xxx.vercel.app`  
+   首页、文章、后台均可使用；后台上传的图片会存到 Blob 并显示完整 URL。
+
+### 注意
+
+- 首次部署前请先在 Vercel 中创建并绑定 **KV** 和 **Blob**，否则文章列表与图片上传会报错。
+- 若之前用 Render，文章数据在 Render 上，迁到 Vercel 后需在后台重新发布或迁移数据。
+
+---
+
+## 方式二：Render（免费）
 
 网站含 Node 后端（CMS 接口），用 [Render](https://render.com) 可一键部署前后端。
 
@@ -27,7 +51,7 @@
 
 ---
 
-## 方式二：仅静态站（GitHub Pages）
+## 方式三：仅静态站（GitHub Pages）
 
 若只部署静态页面（无后台、无文章接口）：
 
