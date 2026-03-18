@@ -583,13 +583,29 @@
             });
             el.classList.add('filled');
         }
-        var origin = window.location.origin;
-        fetch(origin + '/api/articles')
-            .then(function(r) { return r.json(); })
-            .then(function(articles) {
-                var tickerEl = document.getElementById('breakingNewsTicker');
-                if (!Array.isArray(articles) || articles.length === 0) {
-                    if (tickerEl) tickerEl.textContent = 'No breaking news';
+        var tickerEl = document.getElementById('breakingNewsTicker');
+        function setTicker(msg) { if (tickerEl) tickerEl.textContent = msg || 'No breaking news'; }
+        fetch('/api/articles')
+            .then(function(r) {
+                var store = r.headers.get('X-Store');
+                var countHeader = r.headers.get('X-Articles-Count');
+                if (!r.ok) {
+                    setTicker('Unable to load news (server error)');
+                    return { _nonArray: true };
+                }
+                return r.json().then(function(articles) {
+                    return { articles: articles, store: store, count: countHeader };
+                });
+            })
+            .then(function(data) {
+                if (data._nonArray) return;
+                var articles = data.articles;
+                if (!Array.isArray(articles)) {
+                    setTicker('No breaking news');
+                    return;
+                }
+                if (articles.length === 0) {
+                    setTicker(data.store === 'none' ? 'Backend not configured (add Upstash Redis or Vercel KV)' : 'No breaking news');
                     return;
                 }
                 var sorted = articles.slice().sort(function(a, b) {
@@ -609,7 +625,7 @@
                     tickerEl.innerHTML = firstTitle + ' &bull; ' + firstTitle + ' &bull; ';
                 }
             })
-            .catch(function() {});
+            .catch(function() { setTicker('Unable to load news'); });
     })();
     </script>
 </body>

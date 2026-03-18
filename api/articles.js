@@ -14,6 +14,7 @@
 
 // 统一 store：优先 Upstash REST（serverless 友好），再 @vercel/kv，再 REDIS_URL + node-redis
 let kvStore = null;
+let storeType = null; // 'upstash' | 'kv' | 'redis' | null
 function getStore() {
   if (kvStore) return kvStore;
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -27,6 +28,7 @@ function getStore() {
         get: async (key) => await upstash.get(key),
         set: async (key, val) => await upstash.set(key, typeof val === 'string' ? val : JSON.stringify(val)),
       };
+      storeType = 'upstash';
       return kvStore;
     } catch (e) { /* ignore */ }
   }
@@ -40,6 +42,7 @@ function getStore() {
         },
         set: async (key, val) => { await kv.set(key, typeof val === 'string' ? val : JSON.stringify(val)); },
       };
+      storeType = 'kv';
       return kvStore;
     } catch (e) { /* ignore */ }
   }
@@ -76,8 +79,10 @@ function getStore() {
         }
       },
     };
+    storeType = 'redis';
     return kvStore;
   }
+  storeType = null;
   return null;
 }
 
@@ -100,7 +105,11 @@ async function getArticles() {
   try {
     const raw = await store.get('cms_articles');
     if (raw == null) return [];
-    return Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+      try { return JSON.parse(raw); } catch (_) { return []; }
+    }
+    return [];
   } catch (e) {
     return [];
   }
@@ -121,9 +130,9 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     const store = getStore();
     const articles = await getArticles();
-    if (store) res.setHeader('X-Store', process.env.KV_REST_API_URL ? 'kv' : 'redis');
-    else res.setHeader('X-Store', 'none');
+    res.setHeader('X-Store', storeType || 'none');
     res.setHeader('X-Articles-Count', String(articles.length));
+    res.setHeader('Access-Control-Expose-Headers', 'X-Store, X-Articles-Count');
     res.writeHead(200, CORS);
     res.end(JSON.stringify(articles));
     return;

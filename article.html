@@ -92,7 +92,6 @@
     (function() {
         var params = new URLSearchParams(window.location.search);
         var id = params.get('id');
-        var origin = window.location.origin;
 
         function timeAgo(iso) {
             if (!iso) return '';
@@ -188,7 +187,7 @@
         if (!id) {
             showNotFound();
         } else {
-            fetch(origin + '/api/articles')
+            fetch('/api/articles')
                 .then(function(r) { return r.json(); })
                 .then(function(articles) {
                     if (!Array.isArray(articles)) { showNotFound(); return; }

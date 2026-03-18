@@ -35,6 +35,7 @@
 1. **Redeploy**：连好 KV 后必须在 Deployments 里对最新部署点 **Redeploy**，否则接口拿不到 KV 环境变量。
 2. **环境变量**：项目 **Settings** → **Environment Variables**，确认存在 `KV_REST_API_URL` 和 `KV_REST_API_TOKEN`（若连接时用了自定义前缀，会显示为带前缀的名称，代码已做兼容）。
 3. **后台是否报错**：发布时若提示失败，多半是 KV 未连接或未 Redeploy；若提示成功但首页仍空，再 Redeploy 一次并等 1～2 分钟后再刷新首页。
+4. **调试接口**：在浏览器打开 `https://你的域名/api/articles`，在开发者工具 **Network** 里看该请求的 **Response Headers**：`X-Store` 为 `none` 表示未配置存储（需添加 Upstash/KV 并 Redeploy）；为 `upstash`/`kv`/`redis` 表示已连接，若 `X-Articles-Count` 为 0 则当前库内无文章，去后台发一篇再刷新。
 
 **只有 REDIS_URL、文章仍不显示？**  
 Vercel Serverless 下用 TCP 连 Redis（REDIS_URL）有时会超时或连不上。可改用 **Upstash Redis（HTTP REST）**，在 serverless 下更稳定：
