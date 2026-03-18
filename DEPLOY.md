@@ -36,6 +36,16 @@
 2. **环境变量**：项目 **Settings** → **Environment Variables**，确认存在 `KV_REST_API_URL` 和 `KV_REST_API_TOKEN`（若连接时用了自定义前缀，会显示为带前缀的名称，代码已做兼容）。
 3. **后台是否报错**：发布时若提示失败，多半是 KV 未连接或未 Redeploy；若提示成功但首页仍空，再 Redeploy 一次并等 1～2 分钟后再刷新首页。
 
+**只有 REDIS_URL、没有 KV_REST_API_URL？**  
+项目已支持 **REDIS_URL**（Vercel 新版 Redis 连接）：只要环境变量里有 `REDIS_URL`，文章接口会自动用 node-redis 读写，无需再改前缀或重连。若你希望改用 `KV_REST_API_*`，可做一次「断开再连接，前缀留空」：
+
+1. 打开项目 **Settings** → **Environment Variables**。
+2. 找到 **REDIS_URL** 那一行，点右侧 **⋯** → **Remove**，确认删除。
+3. 在左侧或 Storage 里打开你的 **KV 数据库**（如 seedance-kv）→ 点 **Connect Project**（或 **Connect project options** → **Connect to this project**）。
+4. 若出现 **「Environment Variable Prefix」** 或 **「变量名前缀」** 输入框：**不要填任何内容，留空** → 保存。
+5. 回到 **Settings** → **Environment Variables**，确认已出现 **KV_REST_API_URL** 和 **KV_REST_API_TOKEN**。
+6. **Deployments** → 最新部署 **⋯** → **Redeploy**，等完成后在后台再发一篇测试文章并刷新首页。
+
 ---
 
 ## 方式二：Render（免费）

@@ -12,11 +12,53 @@
   }
 })();
 
-let kv;
-try {
-  kv = require('@vercel/kv').kv;
-} catch (e) {
-  kv = null;
+// 统一 store：优先 @vercel/kv（KV_REST_API_*），否则用 REDIS_URL + node-redis（与 api/articles.js 一致）
+let kvStore = null;
+function getStore() {
+  if (kvStore) return kvStore;
+  if (process.env.KV_REST_API_URL) {
+    try {
+      const kv = require('@vercel/kv').kv;
+      kvStore = {
+        get: async (key) => {
+          const v = await kv.get(key);
+          return v == null ? null : (typeof v === 'string' ? v : JSON.stringify(v));
+        },
+        set: async (key, val) => { await kv.set(key, typeof val === 'string' ? val : JSON.stringify(val)); },
+      };
+      return kvStore;
+    } catch (e) { /* ignore */ }
+  }
+  if (process.env.REDIS_URL) {
+    let redisClient = null;
+    kvStore = {
+      get: async (key) => {
+        try {
+          if (!redisClient || !redisClient.isOpen) {
+            const { createClient } = require('redis');
+            redisClient = createClient({ url: process.env.REDIS_URL });
+            redisClient.on('error', () => {});
+            await redisClient.connect();
+          }
+          return await redisClient.get(key);
+        } catch (e) {
+          redisClient = null;
+          return null;
+        }
+      },
+      set: async (key, val) => {
+        if (!redisClient || !redisClient.isOpen) {
+          const { createClient } = require('redis');
+          redisClient = createClient({ url: process.env.REDIS_URL });
+          redisClient.on('error', () => {});
+          await redisClient.connect();
+        }
+        await redisClient.set(key, typeof val === 'string' ? val : JSON.stringify(val));
+      },
+    };
+    return kvStore;
+  }
+  return null;
 }
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
@@ -33,9 +75,10 @@ function parseBody(req) {
 }
 
 async function getArticles() {
-  if (!kv) return [];
+  const store = getStore();
+  if (!store) return [];
   try {
-    const raw = await kv.get('cms_articles');
+    const raw = await store.get('cms_articles');
     if (raw == null) return [];
     return Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
   } catch (e) {
@@ -44,7 +87,8 @@ async function getArticles() {
 }
 
 async function setArticles(articles) {
-  await kv.set('cms_articles', JSON.stringify(articles));
+  const store = getStore();
+  await store.set('cms_articles', articles);
 }
 
 module.exports = async (req, res) => {
@@ -75,9 +119,9 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'PUT') {
-    if (!kv) {
+    if (!getStore()) {
       res.writeHead(503, CORS);
-      res.end(JSON.stringify({ error: 'KV not configured. Add Vercel KV in Storage.' }));
+      res.end(JSON.stringify({ error: 'KV/Redis not configured. Add Vercel KV or Redis in Storage.' }));
       return;
     }
     const ct = (req.headers['content-type'] || '').toLowerCase();
@@ -135,9 +179,9 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'DELETE') {
-    if (!kv) {
+    if (!getStore()) {
       res.writeHead(503, CORS);
-      res.end(JSON.stringify({ error: 'KV not configured. Add Vercel KV in Storage.' }));
+      res.end(JSON.stringify({ error: 'KV/Redis not configured. Add Vercel KV or Redis in Storage.' }));
       return;
     }
     try {
