@@ -12,10 +12,24 @@
   }
 })();
 
-// 统一 store：优先 @vercel/kv（KV_REST_API_*），否则用 REDIS_URL + node-redis
+// 统一 store：优先 Upstash REST（serverless 友好），再 @vercel/kv，再 REDIS_URL + node-redis
 let kvStore = null;
 function getStore() {
   if (kvStore) return kvStore;
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      const { Redis } = require('@upstash/redis');
+      const upstash = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      });
+      kvStore = {
+        get: async (key) => await upstash.get(key),
+        set: async (key, val) => await upstash.set(key, typeof val === 'string' ? val : JSON.stringify(val)),
+      };
+      return kvStore;
+    } catch (e) { /* ignore */ }
+  }
   if (process.env.KV_REST_API_URL) {
     try {
       const kv = require('@vercel/kv').kv;
@@ -31,29 +45,35 @@ function getStore() {
   }
   if (process.env.REDIS_URL) {
     let redisClient = null;
+    const getClient = async () => {
+      if (redisClient && redisClient.isReady) return redisClient;
+      const { createClient } = require('redis');
+      redisClient = createClient({
+        url: process.env.REDIS_URL,
+        socket: { connectTimeout: 15000 },
+      });
+      redisClient.on('error', () => { redisClient = null; });
+      await redisClient.connect();
+      return redisClient;
+    };
     kvStore = {
       get: async (key) => {
         try {
-          if (!redisClient || !redisClient.isOpen) {
-            const { createClient } = require('redis');
-            redisClient = createClient({ url: process.env.REDIS_URL });
-            redisClient.on('error', () => {});
-            await redisClient.connect();
-          }
-          return await redisClient.get(key);
+          const c = await getClient();
+          return await c.get(key);
         } catch (e) {
           redisClient = null;
           return null;
         }
       },
       set: async (key, val) => {
-        if (!redisClient || !redisClient.isOpen) {
-          const { createClient } = require('redis');
-          redisClient = createClient({ url: process.env.REDIS_URL });
-          redisClient.on('error', () => {});
-          await redisClient.connect();
+        try {
+          const c = await getClient();
+          await c.set(key, typeof val === 'string' ? val : JSON.stringify(val));
+        } catch (e) {
+          redisClient = null;
+          throw e;
         }
-        await redisClient.set(key, typeof val === 'string' ? val : JSON.stringify(val));
       },
     };
     return kvStore;
@@ -99,7 +119,11 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
+    const store = getStore();
     const articles = await getArticles();
+    if (store) res.setHeader('X-Store', process.env.KV_REST_API_URL ? 'kv' : 'redis');
+    else res.setHeader('X-Store', 'none');
+    res.setHeader('X-Articles-Count', String(articles.length));
     res.writeHead(200, CORS);
     res.end(JSON.stringify(articles));
     return;
