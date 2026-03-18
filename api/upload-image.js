@@ -6,7 +6,7 @@ const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/
 
 function parseMultipart(req) {
   return new Promise((resolve, reject) => {
-    const form = formidable.IncomingForm({ maxFileSize: 4 * 1024 * 1024 });
+    const form = new formidable.IncomingForm({ maxFileSize: 4 * 1024 * 1024 });
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
       else resolve({ fields: fields || {}, files: files || {} });
