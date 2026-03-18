@@ -1,4 +1,9 @@
-const { kv } = require('@vercel/kv');
+let kv;
+try {
+  kv = require('@vercel/kv').kv;
+} catch (e) {
+  kv = null;
+}
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
@@ -14,9 +19,14 @@ function parseBody(req) {
 }
 
 async function getArticles() {
-  const raw = await kv.get('cms_articles');
-  if (raw == null) return [];
-  try { return Array.isArray(raw) ? raw : JSON.parse(raw); } catch { return []; }
+  if (!kv) return [];
+  try {
+    const raw = await kv.get('cms_articles');
+    if (raw == null) return [];
+    return Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+  } catch (e) {
+    return [];
+  }
 }
 
 async function setArticles(articles) {
@@ -31,18 +41,18 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
-    try {
-      const articles = await getArticles();
-      res.writeHead(200, CORS);
-      res.end(JSON.stringify(articles));
-    } catch (e) {
-      res.writeHead(500, CORS);
-      res.end(JSON.stringify({ error: e.message }));
-    }
+    const articles = await getArticles();
+    res.writeHead(200, CORS);
+    res.end(JSON.stringify(articles));
     return;
   }
 
   if (req.method === 'POST') {
+    if (!kv) {
+      res.writeHead(503, CORS);
+      res.end(JSON.stringify({ error: 'KV not configured. Add Vercel KV in Storage and connect to this project.' }));
+      return;
+    }
     const ct = (req.headers['content-type'] || '').toLowerCase();
     if (!ct.includes('application/json')) {
       res.writeHead(400, CORS);

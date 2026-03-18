@@ -1,4 +1,9 @@
-const { kv } = require('@vercel/kv');
+let kv;
+try {
+  kv = require('@vercel/kv').kv;
+} catch (e) {
+  kv = null;
+}
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
@@ -14,9 +19,14 @@ function parseBody(req) {
 }
 
 async function getArticles() {
-  const raw = await kv.get('cms_articles');
-  if (raw == null) return [];
-  try { return Array.isArray(raw) ? raw : JSON.parse(raw); } catch { return []; }
+  if (!kv) return [];
+  try {
+    const raw = await kv.get('cms_articles');
+    if (raw == null) return [];
+    return Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+  } catch (e) {
+    return [];
+  }
 }
 
 async function setArticles(articles) {
@@ -38,24 +48,24 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
-    try {
-      const articles = await getArticles();
-      const article = articles.find((a) => a.id === id);
-      if (!article) {
-        res.writeHead(404, CORS);
-        res.end(JSON.stringify({ error: 'Article not found' }));
-        return;
-      }
-      res.writeHead(200, CORS);
-      res.end(JSON.stringify(article));
-    } catch (e) {
-      res.writeHead(500, CORS);
-      res.end(JSON.stringify({ error: e.message }));
+    const articles = await getArticles();
+    const article = articles.find((a) => a.id === id);
+    if (!article) {
+      res.writeHead(404, CORS);
+      res.end(JSON.stringify({ error: 'Article not found' }));
+      return;
     }
+    res.writeHead(200, CORS);
+    res.end(JSON.stringify(article));
     return;
   }
 
   if (req.method === 'PUT') {
+    if (!kv) {
+      res.writeHead(503, CORS);
+      res.end(JSON.stringify({ error: 'KV not configured. Add Vercel KV in Storage.' }));
+      return;
+    }
     const ct = (req.headers['content-type'] || '').toLowerCase();
     if (!ct.includes('application/json')) {
       res.writeHead(400, CORS);
@@ -111,6 +121,11 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'DELETE') {
+    if (!kv) {
+      res.writeHead(503, CORS);
+      res.end(JSON.stringify({ error: 'KV not configured. Add Vercel KV in Storage.' }));
+      return;
+    }
     try {
       const articles = await getArticles();
       const next = articles.filter((a) => a.id !== id);

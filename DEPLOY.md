@@ -17,10 +17,19 @@
    `https://seedance-2-xxx.vercel.app`  
    首页、文章、后台均可使用；后台上传的图片会存到 Blob 并显示完整 URL。
 
-### 注意
+### 首页没有显示后台上传的文章？
 
-- 首次部署前请先在 Vercel 中创建并绑定 **KV** 和 **Blob**，否则文章列表与图片上传会报错。
-- 若之前用 Render，文章数据在 Render 上，迁到 Vercel 后需在后台重新发布或迁移数据。
+**原因**：文章数据存在 **Vercel KV** 里，若未创建并绑定 KV，接口会返回空列表，首页就一直是占位内容。
+
+**操作步骤**（在 Vercel 项目里）：
+
+1. 打开项目 → 顶部 **Storage**（或 **Create** → **Storage**）。
+2. 点击 **Create Database** → 选 **KV (Redis)** → 起名（如 `seedance-kv`）→ 创建。
+3. 进入该 KV → **Connect to Project** → 选择当前 **seedance-2** 项目 → 确认。
+4. 再 **Create** → 选 **Blob**（存图片）→ 创建后同样 **Connect to Project** 选本项目。
+5. 回到 **Deployments**，点最新部署右侧 **⋯** → **Redeploy**，等部署完成。
+
+完成后：在 **https://你的域名/admin.html** 发布一篇测试文章，再刷新首页即可看到。
 
 ---
 
