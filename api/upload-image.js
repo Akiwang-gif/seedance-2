@@ -50,9 +50,10 @@ module.exports = async (req, res) => {
     const buffer = fs.readFileSync(path);
     const name = (file.originalFilename || file.name || 'image').toString().replace(/[^a-zA-Z0-9._-]/g, '_');
     const blobName = Date.now() + '_' + Math.random().toString(36).slice(2, 9) + '_' + name;
-    const blob = await put(blobName, buffer, { access: 'public' });
+    const blob = await put(blobName, buffer, { access: 'private' });
+    const proxyUrl = '/api/serve-blob?url=' + encodeURIComponent(blob.url);
     res.writeHead(200, CORS);
-    res.end(JSON.stringify({ url: blob.url }));
+    res.end(JSON.stringify({ url: proxyUrl }));
   } catch (e) {
     res.writeHead(500, CORS);
     res.end(JSON.stringify({ error: e.message || 'Upload failed' }));
