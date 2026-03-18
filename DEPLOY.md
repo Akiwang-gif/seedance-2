@@ -31,6 +31,11 @@
 
 完成后：在 **https://你的域名/admin.html** 发布一篇测试文章，再刷新首页即可看到。
 
+**发布了文章还是不显示？** 请依次检查：
+1. **Redeploy**：连好 KV 后必须在 Deployments 里对最新部署点 **Redeploy**，否则接口拿不到 KV 环境变量。
+2. **环境变量**：项目 **Settings** → **Environment Variables**，确认存在 `KV_REST_API_URL` 和 `KV_REST_API_TOKEN`（若连接时用了自定义前缀，会显示为带前缀的名称，代码已做兼容）。
+3. **后台是否报错**：发布时若提示失败，多半是 KV 未连接或未 Redeploy；若提示成功但首页仍空，再 Redeploy 一次并等 1～2 分钟后再刷新首页。
+
 ---
 
 ## 方式二：Render（免费）

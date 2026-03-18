@@ -1,3 +1,17 @@
+// 若连接 KV 时用了自定义前缀，复制到 @vercel/kv 需要的变量名
+(function () {
+  if (process.env.KV_REST_API_URL) return;
+  var keys = Object.keys(process.env || {});
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i].endsWith('_KV_REST_API_URL')) {
+      process.env.KV_REST_API_URL = process.env[keys[i]];
+      var tokenKey = keys[i].replace('_URL', '_TOKEN');
+      process.env.KV_REST_API_TOKEN = process.env[tokenKey] || process.env.KV_REST_API_TOKEN;
+      break;
+    }
+  }
+})();
+
 let kv;
 try {
   kv = require('@vercel/kv').kv;
