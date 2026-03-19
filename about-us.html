@@ -5,42 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="index, follow">
     <title>About Us · Seedance-2</title>
-    <meta name="description" content="About Seedance-2 — your trusted source for news, videos, podcasts, and live updates. | seedance-2.info">
+    <meta name="description" content="About Seedance-2 — independent news and insights on Seedance AI tools, creative workflows, and the future of AI-assisted content. | seedance-2.info">
     <link rel="canonical" href="https://seedance-2.info/about-us.html">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #fff; --text: #1d1d1f; --text-muted: #6e6e73; --border: #eee; }
+        :root {
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --text: #1d1d1f;
+            --text-muted: #515154;
+            --text-soft: #86868b;
+            --accent: #c0392b;
+            --border: #e8e8ed;
+            --prose-max: 38rem;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
         .site-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1rem 2rem;
-            max-width: 900px;
+            max-width: 960px;
             margin: 0 auto;
+            background: var(--surface);
             border-bottom: 1px solid var(--border);
         }
-        .logo { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
         .logo a { color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
         .logo a:hover { color: var(--text-muted); }
         .logo .site-icon { width: 32px; height: 32px; min-width: 32px; min-height: 32px; object-fit: contain; display: block; flex-shrink: 0; }
         .back-link {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            font-weight: 500;
             color: var(--text-muted);
             text-decoration: none;
         }
-        .back-link:hover { color: var(--text); }
-        .page-content {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem 2rem 3rem;
+        .back-link:hover { color: var(--accent); }
+
+        main { max-width: 960px; margin: 0 auto; padding: 0 2rem 4rem; }
+
+        .about-hero {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem 2.25rem 2rem;
+            margin-top: 2rem;
+            margin-bottom: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
-        .page-content h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; }
-        .page-content p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
-        @media (max-width: 600px) { .site-header, .page-content { padding-left: 1rem; padding-right: 1rem; } }
+        .about-kicker {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+        .about-hero h1 {
+            font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+            font-size: clamp(1.75rem, 4vw, 2.25rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            color: var(--text);
+            margin-bottom: 1.25rem;
+        }
+        .about-hero .accent-line {
+            width: 3rem;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #e74c3c);
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .prose {
+            max-width: var(--prose-max);
+            margin: 0 auto;
+        }
+        .prose .lead {
+            font-size: 1.125rem;
+            line-height: 1.75;
+            color: var(--text);
+            font-weight: 500;
+            margin-bottom: 1.75rem;
+        }
+        .prose p {
+            font-size: 1rem;
+            line-height: 1.78;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+        }
+        .prose p:last-child { margin-bottom: 0; }
+        .prose strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .prose h2 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.015em;
+        }
+        .prose h2:first-of-type { margin-top: 1.5rem; }
+        .prose .closing {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 1.02rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .site-header, main { padding-left: 1rem; padding-right: 1rem; }
+            .about-hero { padding: 1.75rem 1.25rem 1.5rem; margin-top: 1.25rem; border-radius: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -48,9 +147,23 @@
         <h1 class="logo"><a href="index.html" aria-label="Seedance-2 Home"><img src="icon.png" alt="" class="site-icon" width="32" height="32">Seedance-2</a></h1>
         <a href="index.html" class="back-link">Back to Home</a>
     </header>
-    <main class="page-content" role="main">
-        <h1>About Us</h1>
-        <p>Seedance-2 is your trusted source for news, videos, podcasts, and live updates. Learn more about our mission and team here.</p>
+    <main role="main">
+        <article class="about-hero" aria-labelledby="about-title">
+            <p class="about-kicker">About us</p>
+            <h1 id="about-title">Independent coverage of Seedance &amp; AI creative tools</h1>
+            <div class="accent-line" aria-hidden="true"></div>
+            <div class="prose">
+                <p class="lead">Seedance-2 is an independent news and insights site focused on <strong>Seedance</strong> and the wider world of <strong>AI-powered creative tools</strong>. We cover product updates, feature launches, industry trends, and practical tips so readers can stay informed without wading through hype or scattered social posts.</p>
+
+                <h2>What we do</h2>
+                <p>Our team follows official announcements, developer notes, and community feedback to turn complex capabilities into <strong>clear, timely reporting</strong>. Whether you are a creator exploring video and media workflows, a professional evaluating new tooling, or simply curious about how AI is reshaping content production, we aim to be a <strong>reliable starting point</strong> for understanding what Seedance offers and how it fits into the broader landscape.</p>
+
+                <h2>Editorial approach</h2>
+                <p>We are not affiliated with Seedance’s creators unless we state otherwise; we <strong>summarize, contextualize, and analyze</strong> publicly available information. Accuracy matters to us: when we correct an article, we note it. We also welcome feedback and story ideas from readers who care about <strong>transparent, useful coverage</strong> of AI tools.</p>
+
+                <p class="closing">Seedance-2 is built for people who want <strong>straightforward news and analysis</strong>—not clickbait—about Seedance and the future of AI-assisted creation. Thank you for reading.</p>
+            </div>
+        </article>
     </main>
 </body>
 </html>
