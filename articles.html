@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Articles · Seedance-2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #1d1d1f;
+            --text-muted: #6e6e73;
+            --accent: #c0392b;
+            --border: #eee;
+            --card-bg: #fff;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin: 0;
+        }
+        .logo a {
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo .site-icon {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
+            object-fit: contain;
+            display: block;
+            flex-shrink: 0;
+        }
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .back-link:hover { color: var(--text); }
+
+        .main-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .list-header h1 {
+            font-size: 1.65rem;
+            font-weight: 700;
+        }
+        .list-header .count {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .articles-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+        .article-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            cursor: pointer;
+        }
+        .article-card .card-media {
+            background: #f0f0f0;
+            min-height: 150px;
+        }
+        .article-card .card-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .article-card .card-body {
+            padding: 1rem 1.1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.45rem;
+        }
+        .article-card .title {
+            font-size: 1.02rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        .article-card .meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .empty {
+            padding: 2.25rem;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .pagination {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .pagination a,
+        .pagination span {
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0 0.55rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        .pagination a:hover {
+            border-color: #ddd;
+            background: #f7f7f7;
+        }
+        .pagination .active {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+        .pagination .disabled {
+            color: #b7b7ba;
+            background: #fafafa;
+        }
+
+        @media (max-width: 640px) {
+            .site-header { padding: 1rem; }
+            .main-wrap { padding: 1rem; }
+            .article-card { grid-template-columns: 1fr; }
+            .article-card .card-media { min-height: 190px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header" role="banner">
+        <h1 class="logo">
+            <a href="index.html" aria-label="Seedance-2 Home">
+                <img src="icon.png" alt="" class="site-icon" width="32" height="32">
+                Seedance-2
+            </a>
+        </h1>
+        <a href="index.html" class="back-link">Back to Home</a>
+    </header>
+
+    <main class="main-wrap" role="main">
+        <div class="list-header">
+            <h1>All Published Articles</h1>
+            <p class="count" id="articleCount">Loading…</p>
+        </div>
+        <div id="articlesGrid" class="articles-grid"></div>
+        <nav id="pagination" class="pagination" aria-label="Article pagination"></nav>
+    </main>
+
+    <script>
+    (function() {
+        var PAGE_SIZE = 10;
+        var gridEl = document.getElementById('articlesGrid');
+        var paginationEl = document.getElementById('pagination');
+        var countEl = document.getElementById('articleCount');
+        var params = new URLSearchParams(window.location.search);
+        var currentPage = parseInt(params.get('page') || '1', 10);
+        if (isNaN(currentPage) || currentPage < 1) currentPage = 1;
+
+        function timeAgo(iso) {
+            if (!iso) return '';
+            var d = new Date(iso);
+            var sec = Math.floor((Date.now() - d.getTime()) / 1000);
+            if (sec < 60) return 'Just now';
+            if (sec < 3600) return Math.floor(sec / 60) + ' min ago';
+            if (sec < 86400) return Math.floor(sec / 3600) + ' hours ago';
+            if (sec < 604800) return Math.floor(sec / 86400) + ' days ago';
+            return d.toLocaleDateString();
+        }
+
+        function setEmpty(text) {
+            gridEl.innerHTML = '<div class="empty">' + text + '</div>';
+            paginationEl.innerHTML = '';
+            countEl.textContent = '0 articles';
+        }
+
+        function renderCards(articles) {
+            gridEl.innerHTML = '';
+            articles.forEach(function(article) {
+                var card = document.createElement('article');
+                card.className = 'article-card';
+                card.setAttribute('data-article-id', article.id);
+
+                var mediaHtml = '<div class="card-media"></div>';
+                if (article.imageUrl) {
+                    mediaHtml = '<div class="card-media"><img loading="lazy" src="' + article.imageUrl + '" alt="' + (article.title || 'Article image') + '"></div>';
+                }
+
+                card.innerHTML = mediaHtml +
+                    '<div class="card-body">' +
+                    '<h2 class="title">' + (article.title || 'Untitled article') + '</h2>' +
+                    '<p class="meta">By ' + (article.author || 'Unknown') + '</p>' +
+                    '<p class="meta">' + timeAgo(article.publishedAt) + '</p>' +
+                    '</div>';
+
+                card.addEventListener('click', function() {
+                    window.location.href = 'article.html?id=' + encodeURIComponent(article.id);
+                });
+                gridEl.appendChild(card);
+            });
+        }
+
+        function pageLink(page, label, isActive, isDisabled) {
+            if (isDisabled) return '<span class="disabled">' + label + '</span>';
+            var cls = isActive ? 'active' : '';
+            return '<a class="' + cls + '" href="articles.html?page=' + page + '">' + label + '</a>';
+        }
+
+        function renderPagination(totalPages, page) {
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+            var html = '';
+            html += pageLink(page - 1, 'Prev', false, page <= 1);
+            for (var i = 1; i <= totalPages; i++) {
+                html += pageLink(i, String(i), i === page, false);
+            }
+            html += pageLink(page + 1, 'Next', false, page >= totalPages);
+            paginationEl.innerHTML = html;
+        }
+
+        fetch('/api/articles')
+            .then(function(r) { return r.json(); })
+            .then(function(articles) {
+                if (!Array.isArray(articles) || articles.length === 0) {
+                    setEmpty('No published articles yet.');
+                    return;
+                }
+                var sorted = articles.slice().sort(function(a, b) {
+                    return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
+                });
+                var total = sorted.length;
+                var totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+                if (currentPage > totalPages) currentPage = totalPages;
+                var start = (currentPage - 1) * PAGE_SIZE;
+                var end = start + PAGE_SIZE;
+                var pageItems = sorted.slice(start, end);
+
+                countEl.textContent = total + ' articles · Page ' + currentPage + ' / ' + totalPages;
+                renderCards(pageItems);
+                renderPagination(totalPages, currentPage);
+            })
+            .catch(function() {
+                setEmpty('Unable to load articles.');
+            });
+    })();
+    </script>
+</body>
+</html>
