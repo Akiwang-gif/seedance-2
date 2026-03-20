@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Keep admin and API endpoints out of search index.
+Disallow: /admin.html
+Disallow: /api/
+
+Sitemap: https://seedance-2.info/sitemap.xml

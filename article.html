@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Article · Seedance-2</title>
+    <meta name="description" content="Read the latest Seedance-2 article and updates on AI video creation.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" id="canonicalLink" href="https://seedance-2.info/article.html">
+    <link rel="alternate" id="altEn" hreflang="en" href="https://seedance-2.info/article.html">
+    <link rel="alternate" id="altDefault" hreflang="x-default" href="https://seedance-2.info/article.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Seedance-2">
+    <meta property="og:title" id="ogTitle" content="Article · Seedance-2">
+    <meta property="og:description" id="ogDescription" content="Read the latest Seedance-2 article and updates on AI video creation.">
+    <meta property="og:url" id="ogUrl" content="https://seedance-2.info/article.html">
+    <meta property="og:image" id="ogImage" content="https://seedance-2.info/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twitterTitle" content="Article · Seedance-2">
+    <meta name="twitter:description" id="twitterDescription" content="Read the latest Seedance-2 article and updates on AI video creation.">
+    <meta name="twitter:image" id="twitterImage" content="https://seedance-2.info/og-image.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -92,6 +107,8 @@
     (function() {
         var params = new URLSearchParams(window.location.search);
         var id = params.get('id');
+        var articleLd = null;
+        var breadcrumbLd = null;
 
         function timeAgo(iso) {
             if (!iso) return '';
@@ -113,6 +130,91 @@
             document.getElementById('notFound').style.display = 'none';
             document.getElementById('articleContent').style.display = 'block';
             document.title = (article.title || 'Article') + ' · Seedance-2';
+            var canonicalUrl = 'https://seedance-2.info/article.html?id=' + encodeURIComponent(article.id || '');
+            var canonicalLink = document.getElementById('canonicalLink');
+            if (canonicalLink) canonicalLink.setAttribute('href', canonicalUrl);
+            var altEn = document.getElementById('altEn');
+            var altDefault = document.getElementById('altDefault');
+            if (altEn) altEn.setAttribute('href', canonicalUrl);
+            if (altDefault) altDefault.setAttribute('href', canonicalUrl);
+            var descriptionText = article.description || 'Read the latest Seedance-2 article and updates on AI video creation.';
+            var imageUrl = article.imageUrl || 'https://seedance-2.info/og-image.jpg';
+            var metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) metaDesc.setAttribute('content', descriptionText);
+            var ogTitle = document.getElementById('ogTitle');
+            var ogDescription = document.getElementById('ogDescription');
+            var ogUrl = document.getElementById('ogUrl');
+            var ogImage = document.getElementById('ogImage');
+            var twitterTitle = document.getElementById('twitterTitle');
+            var twitterDescription = document.getElementById('twitterDescription');
+            var twitterImage = document.getElementById('twitterImage');
+            if (ogTitle) ogTitle.setAttribute('content', (article.title || 'Article') + ' · Seedance-2');
+            if (ogDescription) ogDescription.setAttribute('content', descriptionText);
+            if (ogUrl) ogUrl.setAttribute('content', canonicalUrl);
+            if (ogImage) ogImage.setAttribute('content', imageUrl);
+            if (twitterTitle) twitterTitle.setAttribute('content', (article.title || 'Article') + ' · Seedance-2');
+            if (twitterDescription) twitterDescription.setAttribute('content', descriptionText);
+            if (twitterImage) twitterImage.setAttribute('content', imageUrl);
+
+            if (articleLd && articleLd.parentNode) {
+                articleLd.parentNode.removeChild(articleLd);
+            }
+            articleLd = document.createElement('script');
+            articleLd.type = 'application/ld+json';
+            articleLd.textContent = JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'Article',
+                headline: article.title || 'Article',
+                description: descriptionText,
+                image: imageUrl,
+                datePublished: article.publishedAt || null,
+                dateModified: article.publishedAt || null,
+                author: {
+                    '@type': 'Person',
+                    name: article.author || 'Seedance-2'
+                },
+                publisher: {
+                    '@type': 'Organization',
+                    name: 'Seedance-2',
+                    logo: {
+                        '@type': 'ImageObject',
+                        url: 'https://seedance-2.info/icon.png'
+                    }
+                },
+                mainEntityOfPage: canonicalUrl
+            });
+            document.head.appendChild(articleLd);
+
+            if (breadcrumbLd && breadcrumbLd.parentNode) {
+                breadcrumbLd.parentNode.removeChild(breadcrumbLd);
+            }
+            breadcrumbLd = document.createElement('script');
+            breadcrumbLd.type = 'application/ld+json';
+            breadcrumbLd.textContent = JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    {
+                        '@type': 'ListItem',
+                        position: 1,
+                        name: 'Home',
+                        item: 'https://seedance-2.info/'
+                    },
+                    {
+                        '@type': 'ListItem',
+                        position: 2,
+                        name: 'All Articles',
+                        item: 'https://seedance-2.info/articles.html'
+                    },
+                    {
+                        '@type': 'ListItem',
+                        position: 3,
+                        name: article.title || 'Article',
+                        item: canonicalUrl
+                    }
+                ]
+            });
+            document.head.appendChild(breadcrumbLd);
 
             var media = document.getElementById('articleMedia');
             media.innerHTML = '';
