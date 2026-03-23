@@ -477,7 +477,7 @@
     <header class="site-header" role="banner">
         <h1 class="logo">
             <a href="/" aria-label="Seedance-2 Home">
-                <img src="icon.png" alt="Seedance-2 logo icon" class="site-icon" width="32" height="32">
+                <img src="icon.png" alt="Seedance-2 AI news website logo" class="site-icon" width="32" height="32">
                 Seedance-2
             </a>
         </h1>
@@ -662,7 +662,9 @@
                 media.innerHTML = '';
                 var img = document.createElement('img');
                 img.src = article.imageUrl;
-                img.alt = article.title || '';
+                img.alt = article.title
+                    ? (article.title + ' - Seedance-2 featured news image')
+                    : 'Seedance-2 featured news image';
                 img.setAttribute('loading', 'lazy');
                 img.style.width = '100%';
                 img.style.height = '100%';

@@ -413,7 +413,7 @@
     <header class="site-header" role="banner">
         <h1 class="logo">
             <a href="index.html" aria-label="Seedance-2 Home">
-                <img src="icon.png" alt="Seedance-2 logo icon" class="site-icon" width="32" height="32">
+                <img src="icon.png" alt="Seedance-2 AI news website logo" class="site-icon" width="32" height="32">
                 Seedance-2
             </a>
         </h1>
@@ -543,7 +543,10 @@
 
                 var mediaHtml = '<div class="card-media"></div>';
                 if (article.imageUrl) {
-                    mediaHtml = '<div class="card-media"><img loading="lazy" src="' + article.imageUrl + '" alt="' + (article.title || 'Article cover image') + '"></div>';
+                    var coverAlt = article.title
+                        ? (article.title + ' - Seedance-2 article cover image')
+                        : 'Seedance-2 article cover image';
+                    mediaHtml = '<div class="card-media"><img loading="lazy" src="' + article.imageUrl + '" alt="' + coverAlt.replace(/"/g, '&quot;') + '"></div>';
                 }
 
                 card.innerHTML = mediaHtml +
