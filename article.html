@@ -135,8 +135,46 @@
         .article-wrap .article-body .article-img-wrap { margin: 1.25rem 0; }
         .article-wrap .article-body .article-img-wrap img { display: inline-block; max-width: 100%; height: auto; border-radius: 8px; }
         .article-nav { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 1rem; }
-        .article-nav a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
-        .article-nav a:hover { color: var(--text); }
+        .article-nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            min-height: 0;
+        }
+        .article-nav a.next {
+            align-items: flex-end;
+            text-align: right;
+        }
+        .article-nav a:hover .nav-title { text-decoration: underline; }
+        .article-nav a:hover .nav-label { filter: brightness(0.95); }
+        /* Pill badge: only Previous / Next (like category “News”) */
+        .article-nav .nav-label {
+            display: inline-block;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
+            color: #fff;
+            background: var(--accent);
+            padding: 0.28rem 0.7rem;
+            border-radius: 999px;
+            line-height: 1.2;
+        }
+        /* Article title: bold only, no border / no pill */
+        .article-nav .nav-title {
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.35;
+            max-width: 100%;
+        }
         .site-footer {
             background: #fafafa;
             padding: 3rem 2rem 2rem;
@@ -194,6 +232,7 @@
             .site-nav-bar-inner { padding: 0.65rem 1rem; }
             .site-nav-search { width: 100%; }
             .site-nav-search input[type="search"] { flex: 1; width: auto; min-width: 0; }
+            .article-nav { flex-direction: column; }
         }
     </style>
 </head>
