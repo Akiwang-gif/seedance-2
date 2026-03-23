@@ -44,6 +44,76 @@
         .logo .site-icon { width: 32px; height: 32px; min-width: 32px; min-height: 32px; object-fit: contain; display: block; flex-shrink: 0; }
         .back-link { font-size: 0.95rem; color: var(--text-muted); text-decoration: none; }
         .back-link:hover { color: var(--text); }
+        .site-nav-bar {
+            background: #fafafa;
+            border-bottom: 1px solid var(--border);
+        }
+        .site-nav-bar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0.65rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem 1rem;
+        }
+        .site-nav-links {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.35rem 1.25rem;
+        }
+        .site-nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .site-nav-links a:hover { color: var(--accent); }
+        .site-nav-search {
+            display: flex;
+            align-items: stretch;
+            gap: 0.35rem;
+        }
+        .site-nav-search input[type="search"] {
+            min-width: 140px;
+            width: min(220px, 42vw);
+            padding: 0.45rem 0.65rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            background: #fff;
+        }
+        .site-nav-search input[type="search"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.12);
+        }
+        .site-nav-search button {
+            padding: 0.45rem 0.85rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .site-nav-search button:hover { opacity: 0.92; }
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         .article-wrap { max-width: 800px; margin: 0 auto; padding: 2rem 2rem 3rem; }
         .article-wrap .article-category {
             display: inline-block;
@@ -67,7 +137,12 @@
         .article-nav { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 1rem; }
         .article-nav a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
         .article-nav a:hover { color: var(--text); }
-        @media (max-width: 600px) { .site-header, .article-wrap { padding-left: 1rem; padding-right: 1rem; } }
+        @media (max-width: 600px) {
+            .site-header, .article-wrap { padding-left: 1rem; padding-right: 1rem; }
+            .site-nav-bar-inner { padding: 0.65rem 1rem; }
+            .site-nav-search { width: 100%; }
+            .site-nav-search input[type="search"] { flex: 1; width: auto; min-width: 0; }
+        }
     </style>
 </head>
 <body>
@@ -80,6 +155,22 @@
         </h1>
         <a href="index.html" class="back-link">Back to Home</a>
     </header>
+
+    <nav class="site-nav-bar" aria-label="Site navigation">
+        <div class="site-nav-bar-inner">
+            <div class="site-nav-links">
+                <a href="articles.html">Articles</a>
+                <a href="about-us.html">About Us</a>
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="terms-of-service.html">Terms of Service</a>
+            </div>
+            <form class="site-nav-search" action="articles.html" method="get" role="search">
+                <label class="visually-hidden" for="nav-search-q-article">Search articles</label>
+                <input id="nav-search-q-article" type="search" name="q" placeholder="Search articles…" autocomplete="off">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
 
     <main class="article-wrap" role="main" id="articleMain">
         <div class="article-not-found" id="notFound" style="display:none;">

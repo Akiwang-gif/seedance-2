@@ -68,6 +68,7 @@
             --card-bg: #fff;
             --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
             --radius: 12px;
+            --radius-sm: 8px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -114,6 +115,127 @@
             font-size: 0.95rem;
         }
         .back-link:hover { color: var(--text); }
+
+        .site-nav-bar {
+            background: #fafafa;
+            border-bottom: 1px solid var(--border);
+        }
+        .site-nav-bar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0.65rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem 1rem;
+        }
+        .site-nav-links {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.35rem 1.25rem;
+        }
+        .site-nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .site-nav-links a:hover { color: var(--accent); }
+        .site-nav-search {
+            display: flex;
+            align-items: stretch;
+            gap: 0.35rem;
+        }
+        .site-nav-search input[type="search"] {
+            min-width: 140px;
+            width: min(220px, 42vw);
+            padding: 0.45rem 0.65rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-family: inherit;
+            background: #fff;
+        }
+        .site-nav-search input[type="search"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.12);
+        }
+        .site-nav-search button {
+            padding: 0.45rem 0.85rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .site-nav-search button:hover { opacity: 0.92; }
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .articles-toolbar {
+            margin-bottom: 1.25rem;
+            padding: 1rem 1.1rem;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .articles-page-search {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .articles-page-search input[type="search"] {
+            flex: 1;
+            min-width: 160px;
+            max-width: 420px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: #fff;
+        }
+        .articles-page-search input[type="search"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.12);
+        }
+        .articles-page-search button {
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .articles-page-search button:hover { opacity: 0.92; }
+        .articles-clear-search {
+            font-size: 0.85rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.35rem 0;
+        }
+        .articles-clear-search:hover { text-decoration: underline; }
 
         .main-wrap {
             max-width: 1200px;
@@ -225,6 +347,9 @@
         @media (max-width: 640px) {
             .site-header { padding: 1rem; }
             .main-wrap { padding: 1rem; }
+            .site-nav-bar-inner { padding: 0.65rem 1rem; }
+            .site-nav-search { width: 100%; }
+            .site-nav-search input[type="search"] { flex: 1; width: auto; min-width: 0; }
             .article-card { grid-template-columns: 1fr; }
             .article-card .card-media { min-height: 190px; }
         }
@@ -241,10 +366,34 @@
         <a href="index.html" class="back-link">Back to Home</a>
     </header>
 
+    <nav class="site-nav-bar" aria-label="Site navigation">
+        <div class="site-nav-bar-inner">
+            <div class="site-nav-links">
+                <a href="articles.html">Articles</a>
+                <a href="about-us.html">About Us</a>
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="terms-of-service.html">Terms of Service</a>
+            </div>
+            <form class="site-nav-search" action="articles.html" method="get" role="search">
+                <label class="visually-hidden" for="nav-search-q-articles">Search articles</label>
+                <input id="nav-search-q-articles" type="search" name="q" placeholder="Search articles…" autocomplete="off">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+
     <main class="main-wrap" role="main">
         <div class="list-header">
             <h1>All Published Articles</h1>
             <p class="count" id="articleCount">Loading…</p>
+        </div>
+        <div class="articles-toolbar" aria-label="Article search">
+            <form class="articles-page-search" action="articles.html" method="get" role="search">
+                <label class="visually-hidden" for="articles-toolbar-q">Search articles</label>
+                <input id="articles-toolbar-q" type="search" name="q" placeholder="Search by title, author, keywords…" autocomplete="off">
+                <button type="submit">Search</button>
+                <a href="articles.html" class="articles-clear-search" id="clearSearchLink" hidden>Clear filters</a>
+            </form>
         </div>
         <div id="articlesGrid" class="articles-grid"></div>
         <nav id="pagination" class="pagination" aria-label="Article pagination"></nav>
@@ -256,9 +405,43 @@
         var gridEl = document.getElementById('articlesGrid');
         var paginationEl = document.getElementById('pagination');
         var countEl = document.getElementById('articleCount');
+        var clearLink = document.getElementById('clearSearchLink');
+        var navSearchInput = document.getElementById('nav-search-q-articles');
+        var toolbarSearchInput = document.getElementById('articles-toolbar-q');
         var params = new URLSearchParams(window.location.search);
         var currentPage = parseInt(params.get('page') || '1', 10);
         if (isNaN(currentPage) || currentPage < 1) currentPage = 1;
+        var searchQuery = (params.get('q') || '').trim();
+
+        if (navSearchInput) navSearchInput.value = searchQuery;
+        if (toolbarSearchInput) toolbarSearchInput.value = searchQuery;
+        if (clearLink) clearLink.hidden = !searchQuery;
+
+        function articleHaystack(article) {
+            var parts = [];
+            if (article.title) parts.push(String(article.title));
+            if (article.description) parts.push(String(article.description));
+            if (article.author) parts.push(String(article.author));
+            if (article.category) parts.push(String(article.category));
+            if (article.bodyHtml) parts.push(String(article.bodyHtml).replace(/<[^>]+>/g, ' '));
+            if (article.contentBlocks && article.contentBlocks.length) {
+                article.contentBlocks.forEach(function(block) {
+                    if (block.type === 'text' && block.content) parts.push(String(block.content));
+                });
+            }
+            return parts.join(' ').toLowerCase();
+        }
+
+        function matchesQuery(article, q) {
+            if (!q) return true;
+            return articleHaystack(article).indexOf(q.toLowerCase()) !== -1;
+        }
+
+        function buildListUrl(page) {
+            var qs = 'page=' + page;
+            if (searchQuery) qs += '&q=' + encodeURIComponent(searchQuery);
+            return 'articles.html?' + qs;
+        }
 
         function timeAgo(iso) {
             if (!iso) return '';
@@ -274,7 +457,7 @@
         function setEmpty(text) {
             gridEl.innerHTML = '<div class="empty">' + text + '</div>';
             paginationEl.innerHTML = '';
-            countEl.textContent = '0 articles';
+            countEl.textContent = searchQuery ? '0 matches' : '0 articles';
         }
 
         function renderCards(articles) {
@@ -306,7 +489,7 @@
         function pageLink(page, label, isActive, isDisabled) {
             if (isDisabled) return '<span class="disabled">' + label + '</span>';
             var cls = isActive ? 'active' : '';
-            return '<a class="' + cls + '" href="articles.html?page=' + page + '">' + label + '</a>';
+            return '<a class="' + cls + '" href="' + buildListUrl(page) + '">' + label + '</a>';
         }
 
         function renderPagination(totalPages, page) {
@@ -333,14 +516,24 @@
                 var sorted = articles.slice().sort(function(a, b) {
                     return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
                 });
-                var total = sorted.length;
+                var filtered = sorted.filter(function(a) { return matchesQuery(a, searchQuery); });
+                var total = filtered.length;
                 var totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
                 if (currentPage > totalPages) currentPage = totalPages;
                 var start = (currentPage - 1) * PAGE_SIZE;
                 var end = start + PAGE_SIZE;
-                var pageItems = sorted.slice(start, end);
+                var pageItems = filtered.slice(start, end);
 
-                countEl.textContent = total + ' articles · Page ' + currentPage + ' / ' + totalPages;
+                if (total === 0) {
+                    setEmpty(searchQuery ? 'No articles match your search.' : 'No published articles yet.');
+                    return;
+                }
+
+                if (searchQuery) {
+                    countEl.textContent = total + ' match' + (total === 1 ? '' : 'es') + ' · Page ' + currentPage + ' / ' + totalPages;
+                } else {
+                    countEl.textContent = sorted.length + ' articles · Page ' + currentPage + ' / ' + totalPages;
+                }
                 renderCards(pageItems);
                 renderPagination(totalPages, currentPage);
             })

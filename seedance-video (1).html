@@ -590,6 +590,73 @@
                 padding: 0.6rem 1rem;
             }
         }
+
+        /* Portal links + search (matches dark theme) */
+        .portal-subnav {
+            padding: 0.65rem 3rem;
+            background: rgba(30, 41, 59, 0.98);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem 1rem;
+        }
+        .portal-subnav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem 1.25rem;
+            align-items: center;
+        }
+        .portal-subnav-links a {
+            color: #CBD5E1;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .portal-subnav-links a:hover { color: #FBBF24; }
+        .portal-subnav-search {
+            display: flex;
+            gap: 0.35rem;
+            align-items: stretch;
+        }
+        .portal-subnav-search input[type="search"] {
+            min-width: 120px;
+            width: min(200px, 42vw);
+            padding: 0.45rem 0.65rem;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.65);
+            color: #F8FAFC;
+            font-size: 0.85rem;
+        }
+        .portal-subnav-search input[type="search"]::placeholder { color: #94A3B8; }
+        .portal-subnav-search input[type="search"]:focus {
+            outline: none;
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+        }
+        .portal-subnav-search button {
+            padding: 0.45rem 0.85rem;
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .portal-subnav-search button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+        @media (max-width: 768px) {
+            .portal-subnav { padding: 0.65rem 1.25rem; }
+            .portal-subnav-search { width: 100%; }
+            .portal-subnav-search input[type="search"] { flex: 1; width: auto; min-width: 0; }
+        }
     </style>
 </head>
 <body>
@@ -604,6 +671,20 @@
             <button class="btn-login">登录</button>
         </div>
     </nav>
+
+    <div class="portal-subnav" aria-label="Site links">
+        <div class="portal-subnav-links">
+            <a href="articles.html">Articles</a>
+            <a href="about-us.html">About Us</a>
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+        </div>
+        <form class="portal-subnav-search" action="articles.html" method="get" role="search">
+            <label for="portal-nav-search-q" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Search articles</label>
+            <input id="portal-nav-search-q" type="search" name="q" placeholder="Search articles…" autocomplete="off">
+            <button type="submit">Search</button>
+        </form>
+    </div>
 
     <!-- Home Page -->
     <div id="homePage">
