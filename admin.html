@@ -591,7 +591,7 @@
                 var firstImg = firstImageFromEditor();
                 if (firstImg && firstImg.indexOf('data:') !== 0) {
                     if (firstImg.indexOf('blob:') === 0) previewObjectUrl = firstImg;
-                    mediaEl.innerHTML = '<img src="' + firstImg + '" alt="">';
+                    mediaEl.innerHTML = '<img src="' + firstImg + '" alt="Article preview image">';
                 } else {
                     mediaEl.innerHTML = 'No image';
                 }
