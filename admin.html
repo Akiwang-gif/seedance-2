@@ -202,7 +202,63 @@
             white-space: nowrap;
             border: 0;
         }
+        .site-footer {
+            background: #fafafa;
+            padding: 3rem 2rem 2rem;
+            border-top: 1px solid var(--border);
+            margin: 2rem -2rem -2rem -2rem;
+            width: calc(100% + 4rem);
+            box-sizing: border-box;
+        }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 3rem;
+            align-items: start;
+        }
+        .footer-brand .logo-text {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .footer-brand .tagline {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+        .footer-col h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col li { margin-bottom: 0.4rem; }
+        .footer-col a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .footer-col a:hover { color: var(--text); }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 2rem auto 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .footer-bottom .copyright {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        @media (max-width: 900px) {
+            .footer-inner { grid-template-columns: 1fr; }
+        }
         @media (max-width: 600px) {
+            .site-footer { margin: 2rem -1rem -1rem -1rem; width: calc(100% + 2rem); }
             .site-nav-bar { margin: -1.5rem -1rem 1rem -1rem; width: calc(100% + 2rem); }
             .site-nav-bar-inner { padding: 0.65rem 1rem; }
             .site-nav-search { width: 100%; }
@@ -362,6 +418,26 @@
             </div>
         </div>
     </div>
+
+    <footer class="site-footer" role="contentinfo">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="logo-text">Seedance-2</div>
+                <p class="tagline">Your trusted source for news, videos, podcasts, and live updates. Seedance-2 | seedance-2.info</p>
+            </div>
+            <div class="footer-col">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="about-us.html">About Us</a></li>
+                    <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    <li><a href="terms-of-service.html">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p class="copyright">&copy; 2026 Seedance-2. All rights reserved. | seedance-2.info</p>
+        </div>
+    </footer>
 
     <script>
         (function() {
