@@ -222,6 +222,24 @@
             margin: 0 auto;
             padding: 2rem;
         }
+        .main-page-title {
+            font-size: clamp(1.35rem, 2.2vw, 1.6rem);
+            font-weight: 700;
+            line-height: 1.28;
+            margin: 0 0 1.35rem;
+            letter-spacing: -0.02em;
+            max-width: 42rem;
+        }
+        .hero-grid .home-section-title {
+            grid-column: 1 / -1;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 0 0 0.85rem;
+            padding: 0;
+        }
 
         /* ========== Featured + Side cards ========== */
         .hero-grid {
@@ -320,9 +338,12 @@
             gap: 0.75rem;
             flex-wrap: wrap;
         }
-        .trending .label {
+        .trending .trending-section-title {
             font-weight: 700;
             font-size: 0.95rem;
+            margin: 0;
+            flex-shrink: 0;
+            line-height: 1.2;
         }
         .trending .tags {
             display: flex;
@@ -475,12 +496,12 @@
 </head>
 <body>
     <header class="site-header" role="banner">
-        <h1 class="logo">
+        <div class="logo">
             <a href="/" title="Seedance-2 homepage — AI news, Seedance, and AI video coverage" aria-label="Seedance-2 Home">
                 <img src="icon.png" alt="Seedance-2 AI news website logo" class="site-icon" width="32" height="32">
                 Seedance-2
             </a>
-        </h1>
+        </div>
     </header>
 
     <section class="breaking-news" aria-label="Breaking news">
@@ -507,12 +528,14 @@
     </nav>
 
     <main class="main-wrap" role="main">
-        <section class="hero-grid" aria-label="Featured stories">
+        <h1 class="main-page-title">AI video news &amp; Seedance coverage — curated on Seedance-2</h1>
+        <section class="hero-grid" aria-labelledby="featured-heading">
+            <h2 id="featured-heading" class="home-section-title">Featured coverage</h2>
             <article class="featured-card">
                 <div class="card-media" aria-hidden="true"></div>
                 <div class="card-body">
                     <span class="category">Politics</span>
-                    <h2 class="card-title"></h2>
+                    <h3 class="card-title"></h3>
                     <p class="card-desc"></p>
                     <p class="meta">By Author &bull; 2 hours ago</p>
                 </div>
@@ -522,7 +545,7 @@
                     <div class="card-media" aria-hidden="true"></div>
                     <div class="card-body">
                         <span class="category">Technology</span>
-                        <h3 class="card-title"></h3>
+                        <h4 class="card-title"></h4>
                         <p class="card-desc"></p>
                         <p class="meta">4 hours ago</p>
                     </div>
@@ -531,7 +554,7 @@
                     <div class="card-media" aria-hidden="true"></div>
                     <div class="card-body">
                         <span class="category">Sports</span>
-                        <h3 class="card-title"></h3>
+                        <h4 class="card-title"></h4>
                         <p class="card-desc"></p>
                         <p class="meta">6 hours ago</p>
                     </div>
@@ -539,9 +562,9 @@
             </div>
         </section>
 
-        <section class="trending" aria-label="Trending topics">
+        <section class="trending" aria-labelledby="trending-heading">
             <div class="trending-inner">
-                <span class="label">Trending:</span>
+                <h2 id="trending-heading" class="trending-section-title">Trending in AI video &amp; Seedance</h2>
                 <div class="tags">
                     <a href="articles.html" title="Articles about Seedance — AI video and news on Seedance-2">Seedance</a>
                     <a href="articles.html" title="Articles about Seedance 2.0 and ByteDance AI video">Seedance 2</a>
@@ -559,7 +582,7 @@
 
         <section class="latest-news" aria-labelledby="latest-heading">
             <div class="latest-header">
-                <h2 id="latest-heading">Latest News</h2>
+                <h2 id="latest-heading">Latest AI video headlines</h2>
                 <a href="articles.html" class="view-all" title="View all latest articles on Seedance-2">View all &rarr;</a>
             </div>
             <div class="latest-grid">

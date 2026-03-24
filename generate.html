@@ -180,7 +180,10 @@
         .preview-loading { text-align: center; color: var(--text-muted); }
         .preview-loading .icon { font-size: 2.5rem; }
         .preview-loading-hint { font-size: 0.85rem; margin-top: 0.25rem; }
-        .controls-section h2 { font-size: 1.4rem; margin-bottom: 1.25rem; }
+        .generate-main { padding-bottom: 2rem; }
+        .generate-page-title { font-size: 1.5rem; font-weight: 700; margin: 0 auto 0.35rem; max-width: 900px; padding: 0 1rem; }
+        .generate-page-lead { font-size: 0.95rem; color: var(--text-muted); margin: 0 auto 1.25rem; max-width: 900px; padding: 0 1rem; line-height: 1.5; }
+        .controls-section h3 { font-size: 1.4rem; margin-bottom: 1.25rem; }
         .input-group { margin-bottom: 1.25rem; }
         .input-group label { display: block; margin-bottom: 0.4rem; font-size: 0.9rem; font-weight: 500; }
         .input-group textarea {
@@ -333,6 +336,9 @@
         </div>
     </nav>
 
+    <main class="generate-main" role="main">
+    <h1 class="generate-page-title">Create AI videos on Seedance-2</h1>
+    <p class="generate-page-lead">Choose a mode below—describe a scene, animate a still, or adjust look and motion on a clip.</p>
     <div class="tabs">
         <button type="button" class="tab active" data-tab="text2video">Text to Video</button>
         <button type="button" class="tab" data-tab="image2video">Image to Video</button>
@@ -344,7 +350,7 @@
             <div class="preview-placeholder"><div class="icon">🎬</div><p>Video preview</p></div>
         </div>
         <div class="controls-section">
-            <h2>Text to Video</h2>
+            <h3>Write a prompt, get a moving clip</h3>
             <div class="input-group">
                 <label>Prompt</label>
                 <textarea placeholder="e.g. A cat dancing on a rooftop under moonlight..."></textarea>
@@ -384,7 +390,7 @@
             <div id="i2vVideoWrap" style="display:none;"><video id="i2vResult" controls playsinline></video></div>
         </div>
         <div class="controls-section">
-            <h2>Image to Video</h2>
+            <h3>Upload a still and describe the motion</h3>
             <div class="input-group">
                 <label>Prompt</label>
                 <textarea id="i2vPrompt" placeholder="Describe the motion or scene..." rows="3"></textarea>
@@ -417,7 +423,7 @@
             <div id="effVideoWrap" style="display:none;"><video id="effSource" controls playsinline></video></div>
         </div>
         <div class="controls-section">
-            <h2>Video effects</h2>
+            <h3>Tweak filters, speed, and mood on a video</h3>
             <div class="input-group">
                 <label>Video</label>
                 <input type="file" id="effVideoInput" accept="video/mp4,video/webm,video/quicktime" style="display:none">
@@ -439,6 +445,7 @@
             <button type="button" class="btn-generate" onclick="alert('Effects applied. (Demo)')">Apply effects</button>
         </div>
     </div>
+    </main>
 
     <footer class="site-footer" role="contentinfo">
         <div class="footer-inner">

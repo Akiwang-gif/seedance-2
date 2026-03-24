@@ -206,11 +206,32 @@
         }
 
         /* Feature Cards */
+        .features-intro-block {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        .features-overview-heading {
+            text-align: center;
+            font-size: 1.65rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem;
+            color: #F8FAFC;
+            line-height: 1.35;
+        }
+        .features-subcopy {
+            text-align: center;
+            color: #94A3B8;
+            margin: 0 auto 1.5rem;
+            max-width: 36rem;
+            font-size: 0.95rem;
+            line-height: 1.55;
+        }
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
-            padding: 2rem 3rem;
+            padding: 0 3rem 2rem;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -756,7 +777,7 @@
         <!-- Hero Section -->
         <div class="hero">
             <div class="brand-badge">✨ SEEDANCE-2.INFO</div>
-            <h1>AI 视频创作，触手可及</h1>
+            <h1>Seedance-2｜AI 文生视频、图生视频与特效</h1>
             <p class="hero-subtitle">让想象成为现实</p>
             
             <div class="brand-keywords">
@@ -767,30 +788,34 @@
         </div>
 
         <!-- Feature Cards -->
+        <section class="features-intro-block" aria-labelledby="features-overview-heading">
+            <h2 id="features-overview-heading" class="features-overview-heading">三种典型创作路径</h2>
+            <p class="features-subcopy">从一句话、到一张图、再到已有成片，按你的素材选择入口即可。</p>
         <div class="features">
             <div class="feature-card" onclick="showCreator('text2video')">
                 <div class="feature-icon">✨</div>
-                <h3>文字转视频</h3>
-                <p>描述你的想法，AI 为你创作视频</p>
+                <h3>用文字描述生成短片</h3>
+                <p>写出场景与情绪，AI 帮你补全镜头与节奏。</p>
             </div>
 
             <div class="feature-card" onclick="showCreator('image2video')">
                 <div class="feature-icon">🖼️</div>
-                <h3>图片转视频</h3>
-                <p>让静态图片动起来</p>
+                <h3>让静态画面产生动感</h3>
+                <p>上传图片并描述运动方向，适合海报与产品展示。</p>
             </div>
 
             <div class="feature-card" onclick="showCreator('effects')">
                 <div class="feature-icon">🎨</div>
-                <h3>视频特效</h3>
-                <p>为视频添加酷炫滤镜与效果</p>
+                <h3>为成片叠加风格与氛围</h3>
+                <p>用滤镜、速度与质感调整，让视频更统一、更有记忆点。</p>
             </div>
         </div>
+        </section>
 
         <!-- Gallery Section -->
         <div class="gallery-section" id="gallery">
             <div class="gallery-header">
-                <h2>精选作品</h2>
+                <h2>灵感示例与风格参考</h2>
             </div>
 
             <div class="gallery-grid" id="galleryGrid">
@@ -859,7 +884,7 @@
 
         <div class="controls-section">
             <a href="#" class="btn-back" onclick="showHome()">← 返回</a>
-            <h2>文字转视频</h2>
+            <h2>文生视频：从一句话到动态画面</h2>
 
             <div class="input-group">
                 <label>描述你的视频</label>
@@ -918,7 +943,7 @@
 
         <div class="controls-section">
             <a href="#" class="btn-back" onclick="showHome()">← 返回</a>
-            <h2>图片转视频</h2>
+            <h2>图生视频：让照片按你的描述动起来</h2>
 
             <div class="input-group">
                 <div class="upload-area">
@@ -979,7 +1004,7 @@
 
         <div class="controls-section">
             <a href="#" class="btn-back" onclick="showHome()">← 返回</a>
-            <h2>视频特效编辑</h2>
+            <h2>特效与节奏：上传成片后继续打磨</h2>
 
             <div class="input-group">
                 <div class="upload-area">
