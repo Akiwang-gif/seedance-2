@@ -273,9 +273,7 @@
             letter-spacing: 0.02em;
         }
         .featured-card .card-title { display: none; font-size: 1.35rem; line-height: 1.35; margin-bottom: 0.65rem; }
-        .featured-card .card-desc { display: none; }
-        .featured-card.filled .card-title,
-        .featured-card.filled .card-desc { display: block; }
+        .featured-card.filled .card-title { display: block; }
         .featured-card .meta {
             font-size: 0.85rem;
             color: var(--text-muted);
@@ -318,9 +316,7 @@
             letter-spacing: 0.02em;
         }
         .side-card .card-title { display: none; font-size: 1rem; line-height: 1.4; margin-bottom: 0.5rem; }
-        .side-card .card-desc { display: none; }
-        .side-card.filled .card-title,
-        .side-card.filled .card-desc { display: block; }
+        .side-card.filled .card-title { display: block; }
         .side-card .meta {
             font-size: 0.8rem;
             color: var(--text-muted);
@@ -412,9 +408,7 @@
             letter-spacing: 0.02em;
         }
         .latest-card .card-title { display: none; font-size: 1.05rem; line-height: 1.38; margin-bottom: 0.5rem; }
-        .latest-card .card-desc { display: none; }
-        .latest-card.filled .card-title,
-        .latest-card.filled .card-desc { display: block; }
+        .latest-card.filled .card-title { display: block; }
         .latest-card .meta {
             font-size: 0.8rem;
             color: var(--text-muted);
@@ -535,7 +529,6 @@
                 <div class="card-body">
                     <span class="category">Politics</span>
                     <h3 class="card-title"></h3>
-                    <p class="card-desc"></p>
                     <p class="meta">By Author &bull; 2 hours ago</p>
                 </div>
             </article>
@@ -545,7 +538,6 @@
                     <div class="card-body">
                         <span class="category">Technology</span>
                         <h3 class="card-title"></h3>
-                        <p class="card-desc"></p>
                         <p class="meta">4 hours ago</p>
                     </div>
                 </article>
@@ -554,7 +546,6 @@
                     <div class="card-body">
                         <span class="category">Sports</span>
                         <h3 class="card-title"></h3>
-                        <p class="card-desc"></p>
                         <p class="meta">6 hours ago</p>
                     </div>
                 </article>
@@ -590,7 +581,6 @@
                     <div class="card-body">
                         <span class="category">Business</span>
                         <h3 class="card-title"></h3>
-                        <p class="card-desc"></p>
                         <p class="meta"><span>Author</span><span>1 hour ago</span></p>
                     </div>
                 </article>
@@ -599,7 +589,6 @@
                     <div class="card-body">
                         <span class="category">Culture</span>
                         <h3 class="card-title"></h3>
-                        <p class="card-desc"></p>
                         <p class="meta"><span>Author</span><span>3 hours ago</span></p>
                     </div>
                 </article>
@@ -608,7 +597,6 @@
                     <div class="card-body">
                         <span class="category">Environment</span>
                         <h3 class="card-title"></h3>
-                        <p class="card-desc"></p>
                         <p class="meta"><span>Author</span><span>5 hours ago</span></p>
                     </div>
                 </article>
@@ -653,7 +641,6 @@
             var media = el.querySelector('.card-media');
             var category = el.querySelector('.category');
             var title = el.querySelector('.card-title');
-            var desc = el.querySelector('.card-desc');
             var meta = el.querySelector('.meta');
             if (category) category.textContent = article.category || 'News';
             var fontFamily = article.cardTitleFontFamily || article.fontFamily || 'Inter';
@@ -669,15 +656,6 @@
                 title.style.color = color;
                 title.style.fontWeight = fontWeight;
                 title.style.fontStyle = fontStyle;
-            }
-            if (desc) {
-                desc.textContent = article.description || '';
-                desc.style.display = article.description ? 'block' : 'none';
-                desc.style.fontFamily = fontFamily;
-                desc.style.fontSize = fontSize;
-                desc.style.color = color;
-                desc.style.fontWeight = fontWeight;
-                desc.style.fontStyle = fontStyle;
             }
             if (meta) meta.textContent = (article.author ? 'By ' + article.author + ' • ' : '') + timeAgo(article.publishedAt);
             if (media && article.imageUrl) {
