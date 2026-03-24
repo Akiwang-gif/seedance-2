@@ -30,6 +30,7 @@ locale: 'en_US'
 },
 twitter: {
 card: 'summary_large_image',
+site: '@seedance2',
 title: 'Seedance AI Tools — News, Updates & Analysis | Seedance-2',
 description: 'Independent news on Seedance AI video tools: launches, policy, IP, and market moves. Curated briefings at seedance-2.info—not a video generator.',
 images: ['/og/og-image.png']
