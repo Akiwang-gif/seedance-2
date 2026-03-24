@@ -94,6 +94,100 @@ function parseBody(req) {
   });
 }
 
+function stripTags(html) {
+  return String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function truncateText(text, maxLen) {
+  const s = String(text || '').trim();
+  if (!s || s.length <= maxLen) return s;
+  const cut = s.slice(0, maxLen - 1);
+  const lastSpace = cut.lastIndexOf(' ');
+  return (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim() + '…';
+}
+
+function isGenericAlt(text) {
+  const t = String(text || '').trim().toLowerCase();
+  if (!t) return true;
+  return ['image', 'photo', 'picture', 'img', 'article image', 'article content image', 'article content illustration'].includes(t);
+}
+
+function buildImageAlt(title, index, total) {
+  const cleanTitle = String(title || '').trim();
+  if (cleanTitle) {
+    if (total > 1) return `${cleanTitle} - supporting image ${index} of ${total}`;
+    return `${cleanTitle} - supporting image`;
+  }
+  if (total > 1) return `Seedance-2 AI news article supporting image ${index} of ${total}`;
+  return 'Seedance-2 AI news article supporting image';
+}
+
+function getAttr(tag, name) {
+  const re = new RegExp(`${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i');
+  const m = tag.match(re);
+  return m ? (m[2] || m[3] || m[4] || '') : '';
+}
+
+function setAttr(tag, name, value) {
+  const escaped = String(value).replace(/"/g, '&quot;');
+  const re = new RegExp(`\\s${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i');
+  if (re.test(tag)) return tag.replace(re, ` ${name}="${escaped}"`);
+  return tag.replace(/>$/, ` ${name}="${escaped}">`);
+}
+
+function normalizeAnchorTitle(href) {
+  const link = String(href || '').trim();
+  if (!link || link.startsWith('#')) return 'Jump to section on Seedance-2';
+  if (/article\.html\?id=/i.test(link)) return 'Read this related Seedance-2 article';
+  if (link.startsWith('/') || /seedance-2\.info/i.test(link)) return 'Read more on Seedance-2';
+  return 'Open external source for reference';
+}
+
+function optimizeBodyHtml(bodyHtml, title) {
+  let html = String(bodyHtml || '').trim();
+  if (!html) return '';
+
+  html = html.replace(/<h1(\s[^>]*)?>/gi, '<h2$1>').replace(/<\/h1>/gi, '</h2>');
+
+  const imgTotal = (html.match(/<img\b/gi) || []).length;
+  let imgIndex = 0;
+  html = html.replace(/<img\b[^>]*>/gi, (imgTag) => {
+    imgIndex += 1;
+    let next = imgTag;
+    const alt = getAttr(next, 'alt');
+    if (isGenericAlt(alt)) next = setAttr(next, 'alt', buildImageAlt(title, imgIndex, imgTotal));
+    if (!getAttr(next, 'loading')) next = setAttr(next, 'loading', 'lazy');
+    if (!getAttr(next, 'decoding')) next = setAttr(next, 'decoding', 'async');
+    return next;
+  });
+
+  html = html.replace(/<a\b[^>]*>/gi, (aTag) => {
+    let next = aTag;
+    if (!getAttr(next, 'title')) next = setAttr(next, 'title', normalizeAnchorTitle(getAttr(next, 'href')));
+    if (/\btarget\s*=\s*("_blank"|'_blank'|_blank)/i.test(next) && !getAttr(next, 'rel')) {
+      next = setAttr(next, 'rel', 'noopener noreferrer');
+    }
+    return next;
+  });
+
+  return html;
+}
+
+function buildDescription(explicitDescription, title, bodyHtml) {
+  const explicit = truncateText(explicitDescription, 160);
+  if (explicit) return explicit;
+  const fromBody = truncateText(stripTags(bodyHtml), 160);
+  if (fromBody) return fromBody;
+  const cleanTitle = String(title || '').trim();
+  if (cleanTitle) return truncateText(`${cleanTitle} - latest Seedance AI tools news and analysis on Seedance-2.`, 160);
+  return 'Latest Seedance AI tools news and analysis on Seedance-2.';
+}
+
 async function getArticles() {
   const store = getStore();
   if (!store) return [];
@@ -161,7 +255,7 @@ module.exports = async (req, res) => {
       }
       const existing = articles[index];
       const title = String(body.title ?? existing.title ?? '').trim();
-      const description = String(body.description ?? existing.description ?? '').trim();
+      let description = String(body.description ?? existing.description ?? '').trim();
       const category = String(body.category ?? existing.category ?? 'News').trim() || 'News';
       let imageUrl = String(body.imageUrl ?? existing.imageUrl ?? '').trim();
       const author = String(body.author ?? existing.author ?? '').trim();
@@ -176,6 +270,8 @@ module.exports = async (req, res) => {
       const cardTitleFontWeight = String(body.cardTitleFontWeight ?? existing.cardTitleFontWeight ?? 'normal').trim() || 'normal';
       const cardTitleFontStyle = String(body.cardTitleFontStyle ?? existing.cardTitleFontStyle ?? 'normal').trim() || 'normal';
       let bodyHtml = String(body.bodyHtml ?? existing.bodyHtml ?? '').trim();
+      if (bodyHtml) bodyHtml = optimizeBodyHtml(bodyHtml, title);
+      description = buildDescription(description, title, bodyHtml);
       if (bodyHtml) {
         const m = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
         if (m && m[1] && (m[1].includes('/') || m[1].startsWith('http'))) imageUrl = m[1];
