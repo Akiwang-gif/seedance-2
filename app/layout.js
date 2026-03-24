@@ -14,24 +14,24 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.seedance-2.inf
 
 export const metadata = {
 metadataBase: new URL(SITE_URL),
-title: { default: 'Seedance Video · Image to Video', template: '%s | Seedance-2' },
-description: 'Seedance-2: Create AI videos from images. Free image-to-video generator.',
-keywords: ['seedance video','seedance-2','ai video generator','image to video','seedance-2.info'],
+title: { default: 'Seedance AI Tools — News, Updates & Analysis | Seedance-2', template: '%s | Seedance-2' },
+description: 'Independent news on Seedance AI video tools: launches, policy, IP, and market moves. Curated briefings at seedance-2.info—not a video generator.',
+keywords: ['seedance news','seedance-2','seedance ai','AI video news','seedance 2.0','seedance-2.info'],
 robots: { index: true, follow: true },
 alternates: { canonical: '/' },
 openGraph: {
 type: 'website',
 url: SITE_URL,
-title: 'Seedance Video · Image to Video',
-description: 'Create AI videos from images in seconds.',
+title: 'Seedance AI Tools — News, Updates & Analysis | Seedance-2',
+description: 'Independent news on Seedance AI video tools: launches, policy, IP, and market moves. Curated briefings at seedance-2.info—not a video generator.',
 siteName: 'Seedance-2',
 images: [{ url: '/og/og-image.png', width: 1200, height: 630, alt: 'Seedance preview' }],
 locale: 'en_US'
 },
 twitter: {
 card: 'summary_large_image',
-title: 'Seedance Video · Image to Video',
-description: 'Create AI videos from images in seconds.',
+title: 'Seedance AI Tools — News, Updates & Analysis | Seedance-2',
+description: 'Independent news on Seedance AI video tools: launches, policy, IP, and market moves. Curated briefings at seedance-2.info—not a video generator.',
 images: ['/og/og-image.png']
 }
 };
