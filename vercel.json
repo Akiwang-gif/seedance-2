@@ -2,23 +2,5 @@
   "framework": null,
   "buildCommand": "echo 'Static + API'",
   "outputDirectory": ".",
-  "installCommand": "npm install",
-  "redirects": [
-    {
-      "source": "/index.html",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.seedance-2.info"
-        }
-      ],
-      "destination": "https://seedance-2.info/:path*",
-      "permanent": true
-    }
-  ]
+  "installCommand": "npm install"
 }
