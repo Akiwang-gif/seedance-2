@@ -680,6 +680,17 @@
         }
         var tickerEl = document.getElementById('breakingNewsTicker');
         function setTicker(msg) { if (tickerEl) tickerEl.textContent = msg || 'No breaking news'; }
+        function hasCustomOrder(article) {
+            return Number.isFinite(Number(article && article.sortOrder));
+        }
+        function compareArticles(a, b) {
+            var aCustom = hasCustomOrder(a);
+            var bCustom = hasCustomOrder(b);
+            if (aCustom && bCustom) return Number(a.sortOrder) - Number(b.sortOrder);
+            if (aCustom) return -1;
+            if (bCustom) return 1;
+            return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
+        }
         fetch('/api/articles')
             .then(function(r) {
                 var store = r.headers.get('X-Store');
@@ -703,9 +714,7 @@
                     setTicker(data.store === 'none' ? 'Backend not configured (add Upstash Redis or Vercel KV)' : 'No breaking news');
                     return;
                 }
-                var sorted = articles.slice().sort(function(a, b) {
-                    return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
-                });
+                var sorted = articles.slice().sort(compareArticles);
                 var featured = document.querySelector('.hero-grid .featured-card');
                 var sideCards = document.querySelectorAll('.hero-grid .side-card');
                 var latestCards = document.querySelectorAll('.latest-grid .latest-card');

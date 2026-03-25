@@ -71,6 +71,8 @@
         .item-actions { flex-shrink: 0; }
         .btn-edit { background: var(--accent); color: #fff; font-size: 0.85rem; padding: 0.35rem 0.6rem; border: none; border-radius: 6px; cursor: pointer; }
         .btn-edit:hover { opacity: 0.9; }
+        .btn-order { background: #f2f2f2; color: var(--text); font-size: 0.85rem; padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+        .btn-order:hover { background: #e8e8e8; }
         .btn-del { background: transparent; color: var(--text-muted); font-size: 0.85rem; padding: 0.35rem 0.6rem; border: none; cursor: pointer; }
         .btn-del:hover { color: var(--accent); }
         .row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
@@ -473,6 +475,51 @@
                 msg.className = 'msg ' + (isError ? 'error' : 'success');
             }
 
+            function hasCustomOrder(article) {
+                return Number.isFinite(Number(article && article.sortOrder));
+            }
+
+            function compareArticles(a, b) {
+                var aCustom = hasCustomOrder(a);
+                var bCustom = hasCustomOrder(b);
+                if (aCustom && bCustom) return Number(a.sortOrder) - Number(b.sortOrder);
+                if (aCustom) return -1;
+                if (bCustom) return 1;
+                return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
+            }
+
+            function reorderArticle(direction, id, orderedArticles) {
+                var index = orderedArticles.findIndex(function(a) { return a.id === id; });
+                if (index === -1) return;
+                var swapWith = direction === 'up' ? index - 1 : index + 1;
+                if (swapWith < 0 || swapWith >= orderedArticles.length) return;
+                var current = orderedArticles[index];
+                var target = orderedArticles[swapWith];
+                var currentSort = hasCustomOrder(current) ? Number(current.sortOrder) : index;
+                var targetSort = hasCustomOrder(target) ? Number(target.sortOrder) : swapWith;
+                Promise.all([
+                    fetch(apiBase() + '/api/articles/' + current.id, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sortOrder: targetSort })
+                    }),
+                    fetch(apiBase() + '/api/articles/' + target.id, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sortOrder: currentSort })
+                    })
+                ])
+                .then(function(rs) {
+                    if (!rs[0].ok || !rs[1].ok) throw new Error('reorder failed');
+                    return Promise.all([rs[0].json(), rs[1].json()]);
+                })
+                .then(function() {
+                    showMessage('Article order updated.');
+                    loadList();
+                })
+                .catch(function() { showMessage('Failed to reorder articles.', true); });
+            }
+
             function loadList() {
                 fetch(apiBase() + '/api/articles')
                     .then(function(r) { return r.json(); })
@@ -481,7 +528,8 @@
                             listEl.innerHTML = '<p class="item-meta">No articles yet. Publish one above.</p>';
                             return;
                         }
-                        listEl.innerHTML = articles.map(function(a) {
+                        var ordered = articles.slice().sort(compareArticles);
+                        listEl.innerHTML = ordered.map(function(a, idx) {
                             var date = a.publishedAt ? new Date(a.publishedAt).toLocaleDateString() : '';
                             return '<div class="item" data-id="' + (a.id || '') + '">' +
                                 '<div class="item-info">' +
@@ -489,10 +537,26 @@
                                 '<div class="item-meta">' + (a.category || '') + ' · ' + (a.author || '') + ' · ' + date + '</div>' +
                                 '</div>' +
                                 '<div class="item-actions">' +
+                                '<button type="button" class="btn-order btn-up" data-id="' + (a.id || '') + '" aria-label="Move up" ' + (idx === 0 ? 'disabled' : '') + '>↑</button> ' +
+                                '<button type="button" class="btn-order btn-down" data-id="' + (a.id || '') + '" aria-label="Move down" ' + (idx === ordered.length - 1 ? 'disabled' : '') + '>↓</button> ' +
                                 '<button type="button" class="btn-edit" data-id="' + (a.id || '') + '" aria-label="Edit">Edit</button> ' +
                                 '<button type="button" class="btn-del" data-id="' + (a.id || '') + '" aria-label="Delete">Delete</button>' +
                                 '</div></div>';
                         }).join('');
+                        listEl.querySelectorAll('.btn-up').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var id = btn.getAttribute('data-id');
+                                if (!id) return;
+                                reorderArticle('up', id, ordered);
+                            });
+                        });
+                        listEl.querySelectorAll('.btn-down').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var id = btn.getAttribute('data-id');
+                                if (!id) return;
+                                reorderArticle('down', id, ordered);
+                            });
+                        });
                         listEl.querySelectorAll('.btn-del').forEach(function(btn) {
                             btn.addEventListener('click', function() {
                                 var id = btn.getAttribute('data-id');

@@ -259,6 +259,10 @@ module.exports = async (req, res) => {
       const category = String(body.category ?? existing.category ?? 'News').trim() || 'News';
       let imageUrl = String(body.imageUrl ?? existing.imageUrl ?? '').trim();
       const author = String(body.author ?? existing.author ?? '').trim();
+      var parsedSortOrder = Number(body.sortOrder);
+      const sortOrder = Number.isFinite(parsedSortOrder)
+        ? parsedSortOrder
+        : (Number.isFinite(Number(existing.sortOrder)) ? Number(existing.sortOrder) : null);
       const fontFamily = String(body.fontFamily ?? existing.fontFamily ?? 'Inter').trim() || 'Inter';
       const fontSize = String(body.fontSize ?? existing.fontSize ?? '16px').trim() || '16px';
       const color = String(body.color ?? existing.color ?? '#1d1d1f').trim() || '#1d1d1f';
@@ -282,6 +286,7 @@ module.exports = async (req, res) => {
         fontFamily, fontSize, color, fontWeight, fontStyle,
         cardTitleFontFamily, cardTitleFontSize, cardTitleColor, cardTitleFontWeight, cardTitleFontStyle,
       };
+      if (sortOrder !== null) updated.sortOrder = sortOrder;
       if (bodyHtml !== undefined) updated.bodyHtml = bodyHtml;
       articles[index] = updated;
       await setArticles(articles);

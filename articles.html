@@ -533,6 +533,17 @@
             paginationEl.innerHTML = '';
             countEl.textContent = searchQuery ? '0 matches' : '0 articles';
         }
+        function hasCustomOrder(article) {
+            return Number.isFinite(Number(article && article.sortOrder));
+        }
+        function compareArticles(a, b) {
+            var aCustom = hasCustomOrder(a);
+            var bCustom = hasCustomOrder(b);
+            if (aCustom && bCustom) return Number(a.sortOrder) - Number(b.sortOrder);
+            if (aCustom) return -1;
+            if (bCustom) return 1;
+            return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
+        }
 
         function renderCards(articles) {
             gridEl.innerHTML = '';
@@ -590,9 +601,7 @@
                     setEmpty('No published articles yet.');
                     return;
                 }
-                var sorted = articles.slice().sort(function(a, b) {
-                    return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
-                });
+                var sorted = articles.slice().sort(compareArticles);
                 var filtered = sorted.filter(function(a) { return matchesQuery(a, searchQuery); });
                 var total = filtered.length;
                 var totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));

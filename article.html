@@ -515,13 +515,22 @@
         if (!id) {
             showNotFound();
         } else {
+            function hasCustomOrder(article) {
+                return Number.isFinite(Number(article && article.sortOrder));
+            }
+            function compareArticles(a, b) {
+                var aCustom = hasCustomOrder(a);
+                var bCustom = hasCustomOrder(b);
+                if (aCustom && bCustom) return Number(a.sortOrder) - Number(b.sortOrder);
+                if (aCustom) return -1;
+                if (bCustom) return 1;
+                return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
+            }
             fetch('/api/articles')
                 .then(function(r) { return r.json(); })
                 .then(function(articles) {
                     if (!Array.isArray(articles)) { showNotFound(); return; }
-                    var sorted = articles.slice().sort(function(a, b) {
-                        return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
-                    });
+                    var sorted = articles.slice().sort(compareArticles);
                     var index = sorted.findIndex(function(a) { return a.id === id; });
                     if (index === -1) { showNotFound(); return; }
                     render(sorted[index], sorted, index);

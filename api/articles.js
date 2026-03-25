@@ -252,6 +252,7 @@ module.exports = async (req, res) => {
       const category = String(body.category ?? 'News').trim() || 'News';
       let imageUrl = String(body.imageUrl ?? '').trim();
       const author = String(body.author ?? '').trim();
+      const sortOrder = Number.isFinite(Number(body.sortOrder)) ? Number(body.sortOrder) : null;
       const fontFamily = String(body.fontFamily ?? 'Inter').trim() || 'Inter';
       const fontSize = String(body.fontSize ?? '16px').trim() || '16px';
       const color = String(body.color ?? '#1d1d1f').trim() || '#1d1d1f';
@@ -278,6 +279,7 @@ module.exports = async (req, res) => {
         cardTitleFontFamily, cardTitleFontSize, cardTitleColor, cardTitleFontWeight, cardTitleFontStyle,
         publishedAt,
       };
+      if (sortOrder !== null) article.sortOrder = sortOrder;
       if (bodyHtml) article.bodyHtml = bodyHtml;
       articles.unshift(article);
       await setArticles(articles);
