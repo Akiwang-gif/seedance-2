@@ -233,6 +233,44 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (req.method === 'PATCH') {
+    if (!getStore()) {
+      res.writeHead(503, CORS);
+      res.end(JSON.stringify({ error: 'KV/Redis not configured. Add Vercel KV or Redis in Storage and connect to this project.' }));
+      return;
+    }
+    const ct = (req.headers['content-type'] || '').toLowerCase();
+    if (!ct.includes('application/json')) {
+      res.writeHead(400, CORS);
+      res.end(JSON.stringify({ error: 'Content-Type must be application/json' }));
+      return;
+    }
+    try {
+      const body = await parseBody(req);
+      const ids = Array.isArray(body.ids) ? body.ids.map((v) => String(v || '').trim()).filter(Boolean) : [];
+      if (!ids.length) {
+        res.writeHead(400, CORS);
+        res.end(JSON.stringify({ error: 'ids array is required' }));
+        return;
+      }
+      const idPos = new Map();
+      ids.forEach((id, idx) => idPos.set(id, idx));
+      const articles = await getArticles();
+      const included = articles
+        .filter((a) => idPos.has(String(a.id || '')))
+        .sort((a, b) => idPos.get(String(a.id || '')) - idPos.get(String(b.id || '')));
+      const remaining = articles.filter((a) => !idPos.has(String(a.id || '')));
+      const next = included.concat(remaining).map((a, idx) => ({ ...a, sortOrder: idx }));
+      await setArticles(next);
+      res.writeHead(200, CORS);
+      res.end(JSON.stringify({ ok: true, count: next.length }));
+    } catch (e) {
+      res.writeHead(500, CORS);
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
   if (req.method === 'POST') {
     if (!getStore()) {
       res.writeHead(503, CORS);
