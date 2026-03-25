@@ -10,7 +10,7 @@ const plusJakarta = Plus_Jakarta_Sans({
   variable: '--font-heading',
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.seedance-2.info';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://seedance-2.info';
 
 export const metadata = {
 metadataBase: new URL(SITE_URL),
