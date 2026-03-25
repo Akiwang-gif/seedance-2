@@ -344,6 +344,9 @@
 
                 <label>Article body</label>
                 <p class="sublabel" style="margin-bottom:0.5rem;">Edit directly below. The first image in the content will be used as the cover on the homepage.</p>
+                <p class="sublabel" style="margin-bottom:0.5rem;">
+                    Heading guide: keep only one page H1 (article title). In body, prefer 2-4 section headings using H2/H3 for readability and SEO.
+                </p>
                 <div class="editor-wrap">
                     <div class="editor-toolbar" role="toolbar">
                         <select id="toolFont" title="Font" aria-label="Font">
@@ -766,6 +769,13 @@
                 return changed;
             }
 
+            function bodyHeadingStats() {
+                var h2 = articleBody.querySelectorAll('h2').length;
+                var h3 = articleBody.querySelectorAll('h3').length;
+                var h4 = articleBody.querySelectorAll('h4').length;
+                return { h2: h2, h3: h3, h4: h4, total: h2 + h3 + h4 };
+            }
+
             function updatePreview() {
                 var title = document.getElementById('title').value.trim();
                 var category = document.getElementById('category').value || 'News';
@@ -1110,6 +1120,10 @@
                         }
                         if (autoAltCount > 0) {
                             showMessage('Auto-optimized alt text for ' + autoAltCount + ' image(s).');
+                        }
+                        var headingStats = bodyHeadingStats();
+                        if (headingStats.total === 0) {
+                            showMessage('Published. Tip: add 2-4 H2/H3 section headings in long articles for better SEO and readability.');
                         }
                         form.reset();
                         document.getElementById('cardTitleFontSize').value = '16px';
