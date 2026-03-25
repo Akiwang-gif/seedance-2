@@ -651,13 +651,57 @@
                 }
             }
 
-            function applyCommand(cmd, value) {
-                articleBody.focus();
-                document.execCommand(cmd, false, value !== undefined && value !== null ? value : null);
+            var lastEditorRange = null;
+            function cacheEditorRange() {
+                if (document.activeElement !== articleBody) return;
+                var sel = window.getSelection();
+                if (!sel || sel.rangeCount === 0) return;
+                try {
+                    var r = sel.getRangeAt(0);
+                    if (articleBody.contains(r.commonAncestorContainer)) lastEditorRange = r.cloneRange();
+                } catch (e) {}
+            }
+            function restoreEditorRange() {
+                if (!lastEditorRange) return;
+                try {
+                    var sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(lastEditorRange.cloneRange());
+                } catch (e) {}
+            }
+            function focusEditorNoScroll() {
+                var x = window.scrollX;
+                var y = window.scrollY;
+                try {
+                    articleBody.focus({ preventScroll: true });
+                } catch (e) {
+                    articleBody.focus();
+                }
+                window.scrollTo(x, y);
             }
 
+            function applyCommand(cmd, value) {
+                restoreEditorRange();
+                focusEditorNoScroll();
+                document.execCommand(cmd, false, value !== undefined && value !== null ? value : null);
+                cacheEditorRange();
+            }
+
+            var editorToolbarEl = document.querySelector('.editor-toolbar');
+            if (editorToolbarEl) {
+                editorToolbarEl.addEventListener('pointerdown', function() {
+                    if (document.activeElement === articleBody) cacheEditorRange();
+                }, true);
+            }
+            articleBody.addEventListener('mouseup', cacheEditorRange);
+            articleBody.addEventListener('keyup', cacheEditorRange);
+
             document.querySelectorAll('.editor-toolbar .tool-btn[data-cmd]').forEach(function(btn) {
-                btn.addEventListener('click', function() { applyCommand(btn.getAttribute('data-cmd')); });
+                btn.addEventListener('mousedown', function(e) { e.preventDefault(); });
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    applyCommand(btn.getAttribute('data-cmd'));
+                });
             });
             document.getElementById('toolFont').addEventListener('change', function() { applyCommand('fontName', this.value); });
             document.getElementById('toolSize').addEventListener('change', function() {
@@ -667,6 +711,9 @@
                 applyCommand('fontSize', n);
             });
             document.getElementById('toolColor').addEventListener('input', function() { applyCommand('foreColor', this.value); });
+
+            var btnPreviewEl = document.getElementById('btnPreview');
+            if (btnPreviewEl) btnPreviewEl.addEventListener('mousedown', function(e) { e.preventDefault(); });
 
             function hideImageSizeBar() {
                 var bar = document.getElementById('imageSizeBar');
@@ -739,7 +786,7 @@
                 try { return sel.getRangeAt(0).cloneRange(); } catch (e) { return null; }
             }
             function insertImageAtSelection(url) {
-                articleBody.focus();
+                focusEditorNoScroll();
                 var inserted = false;
                 if (savedSelection) {
                     try {
@@ -792,9 +839,13 @@
                 }
                 updatePreview();
             }
-            document.getElementById('toolInsertImage').addEventListener('mousedown', function() { savedSelection = saveSelection(); });
-            document.getElementById('toolInsertImage').addEventListener('click', function() {
-                if (!savedSelection) { articleBody.focus(); savedSelection = saveSelection(); }
+            document.getElementById('toolInsertImage').addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                savedSelection = saveSelection();
+            });
+            document.getElementById('toolInsertImage').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!savedSelection) { focusEditorNoScroll(); savedSelection = saveSelection(); }
                 document.getElementById('toolImageInput').click();
             });
             document.getElementById('toolImageInput').addEventListener('change', function() {
