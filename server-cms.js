@@ -204,8 +204,14 @@ const server = http.createServer(async (req, res) => {
         publishedAt,
       };
       if (bodyHtml) article.bodyHtml = bodyHtml;
-      articles.unshift(article);
-      writeArticles(articles);
+      article.sortOrder = 0;
+      const bumped = articles.map((a) => {
+        const so = Number(a.sortOrder);
+        if (Number.isFinite(so)) return { ...a, sortOrder: so + 1 };
+        return a;
+      });
+      bumped.unshift(article);
+      writeArticles(bumped);
       res.writeHead(201);
       res.end(JSON.stringify(articles[0]));
     } catch (e) {

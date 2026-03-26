@@ -47,8 +47,13 @@
         }
         .back-link:hover { color: var(--text); }
         .site-nav-bar {
-            background: #fafafa;
-            border-bottom: 1px solid var(--border);
+            position: relative;
+            background:
+                radial-gradient(120% 140% at 100% 0%, rgba(191, 219, 254, 0.28), transparent 42%),
+                linear-gradient(180deg, #fbfcfe 0%, #f7f9fc 100%);
+            border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
         }
         .site-nav-bar-inner {
             max-width: 900px;
@@ -67,20 +72,49 @@
             gap: 0.35rem 1.25rem;
         }
         .site-nav-links a {
-            color: var(--text);
+            position: relative;
+            z-index: 0;
+            color: #1e293b;
             text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
+            font-size: 0.93rem;
+            font-weight: 600;
+            padding: 0.28rem 0.45rem;
+            border-radius: 8px;
+            transition: filter 180ms ease;
+            background: linear-gradient(95deg, #0f172a 0%, #334155 48%, #64748b 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.12));
         }
-        .site-nav-links a:hover { color: var(--accent); }
+        .site-nav-links a::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 8px;
+            background: rgba(192, 57, 43, 0.1);
+            opacity: 0;
+            transition: opacity 180ms ease;
+            z-index: -1;
+        }
+        .site-nav-links a:hover {
+            background: linear-gradient(95deg, #7f1d1d 0%, #c0392b 42%, #ea580c 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(192, 57, 43, 0.28));
+        }
+        .site-nav-links a:hover::before {
+            opacity: 1;
+        }
         .site-nav-search {
             display: flex;
             align-items: stretch;
             gap: 0.35rem;
         }
         .site-nav-search input[type="search"] {
-            min-width: 120px;
-            width: min(200px, 38vw);
+            min-width: 140px;
+            width: min(220px, 42vw);
             padding: 0.45rem 0.65rem;
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -94,17 +128,33 @@
             box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.12);
         }
         .site-nav-search button {
-            padding: 0.45rem 0.85rem;
-            background: var(--accent);
+            padding: 0.5rem 0.95rem;
+            background: linear-gradient(145deg, #9f2f24 0%, #c0392b 45%, #d3543d 100%);
             color: #fff;
             border: none;
             border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
             cursor: pointer;
             font-family: inherit;
+            box-shadow: 0 4px 14px rgba(192, 57, 43, 0.35);
+            transition: box-shadow 180ms ease, transform 180ms ease, filter 180ms ease;
         }
-        .site-nav-search button:hover { opacity: 0.92; }
+        .site-nav-search button .btn-label {
+            background: linear-gradient(180deg, #ffffff 0%, #fdecea 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.35));
+        }
+        .site-nav-search button:hover {
+            box-shadow: 0 6px 18px rgba(192, 57, 43, 0.42);
+            transform: translateY(-1px);
+        }
+        .site-nav-search button:hover .btn-label {
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+        }
         .visually-hidden {
             position: absolute;
             width: 1px;
@@ -166,11 +216,24 @@
         .footer-col ul { list-style: none; padding: 0; margin: 0; }
         .footer-col li { margin-bottom: 0.4rem; }
         .footer-col a {
-            color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #64748b;
+            background: linear-gradient(92deg, #475569 0%, #64748b 55%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 1px 1px rgba(71, 85, 105, 0.12));
+            transition: filter 180ms ease, background 180ms ease;
         }
-        .footer-col a:hover { color: var(--text); }
+        .footer-col a:hover {
+            background: linear-gradient(92deg, #1e293b 0%, #334155 50%, #c0392b 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(30, 41, 59, 0.18));
+        }
         .footer-bottom {
             max-width: 1200px;
             margin: 2rem auto 0;
@@ -209,7 +272,7 @@
             <form class="site-nav-search" action="articles.html" method="get" role="search">
                 <label class="visually-hidden" for="nav-search-q-advertise">Search articles</label>
                 <input id="nav-search-q-advertise" type="search" name="q" placeholder="Search articles…" autocomplete="off">
-                <button type="submit">Search</button>
+                <button type="submit"><span class="btn-label">Search</span></button>
             </form>
         </div>
     </nav>

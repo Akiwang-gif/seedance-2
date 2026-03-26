@@ -290,7 +290,6 @@ module.exports = async (req, res) => {
       const category = String(body.category ?? 'News').trim() || 'News';
       let imageUrl = String(body.imageUrl ?? '').trim();
       const author = String(body.author ?? '').trim();
-      const sortOrder = Number.isFinite(Number(body.sortOrder)) ? Number(body.sortOrder) : null;
       const fontFamily = String(body.fontFamily ?? 'Inter').trim() || 'Inter';
       const fontSize = String(body.fontSize ?? '16px').trim() || '16px';
       const color = String(body.color ?? '#1d1d1f').trim() || '#1d1d1f';
@@ -316,11 +315,17 @@ module.exports = async (req, res) => {
         fontFamily, fontSize, color, fontWeight, fontStyle,
         cardTitleFontFamily, cardTitleFontSize, cardTitleColor, cardTitleFontWeight, cardTitleFontStyle,
         publishedAt,
+        sortOrder: 0,
       };
-      if (sortOrder !== null) article.sortOrder = sortOrder;
       if (bodyHtml) article.bodyHtml = bodyHtml;
-      articles.unshift(article);
-      await setArticles(articles);
+      // 新稿固定置顶：与前台 compareArticles（有 sortOrder 的优先）一致，需把旧文的 sortOrder 全部 +1
+      const bumped = articles.map((a) => {
+        const so = Number(a.sortOrder);
+        if (Number.isFinite(so)) return { ...a, sortOrder: so + 1 };
+        return a;
+      });
+      bumped.unshift(article);
+      await setArticles(bumped);
       res.writeHead(201, CORS);
       res.end(JSON.stringify(article));
     } catch (e) {
