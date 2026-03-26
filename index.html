@@ -327,13 +327,21 @@
                 radial-gradient(circle at 88% 80%, rgba(230, 126, 34, 0.1), transparent 45%),
                 linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
         }
-        .hero-grid .home-section-title {
+        .featured-header {
             grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 0 0 0.28rem;
+        }
+        .hero-grid .home-section-title {
+            margin: 0;
+            padding: 0;
             font-size: clamp(1.45rem, 2.8vw, 1.75rem);
             font-weight: 800;
             letter-spacing: -0.025em;
-            margin: 0 0 0.28rem;
-            padding: 0;
             color: #7f1d1d;
             background: linear-gradient(95deg, #7f1d1d 0%, #c2410c 52%, #f59e0b 100%);
             background-size: 180% 100%;
@@ -538,7 +546,8 @@
             -webkit-text-fill-color: transparent;
             text-shadow: 0 2px 6px rgba(28, 25, 23, 0.2), 0 8px 18px rgba(180, 83, 9, 0.1);
         }
-        .latest-header .view-all {
+        .latest-header .view-all,
+        .featured-header .view-all {
             text-decoration: none;
             font-size: 0.98rem;
             font-weight: 600;
@@ -551,7 +560,8 @@
             text-shadow: 0 1px 3px rgba(192, 57, 43, 0.24), 0 5px 10px rgba(234, 88, 12, 0.12);
             transition: text-shadow 180ms ease;
         }
-        .latest-header .view-all:hover {
+        .latest-header .view-all:hover,
+        .featured-header .view-all:hover {
             text-shadow: 0 2px 5px rgba(192, 57, 43, 0.35), 0 8px 14px rgba(234, 88, 12, 0.18);
             text-decoration: underline;
             text-underline-offset: 3px;
@@ -718,7 +728,10 @@
     <main class="main-wrap" role="main">
         <h1 class="main-page-title">Seedance AI tools news &amp; analysis — curated on Seedance-2</h1>
         <section class="hero-grid" aria-labelledby="featured-heading">
-            <h2 id="featured-heading" class="home-section-title">Featured coverage</h2>
+            <div class="featured-header">
+                <h2 id="featured-heading" class="home-section-title">Featured coverage</h2>
+                <a href="articles.html" class="view-all" title="View all articles — browse the full Seedance-2 archive">View all &rarr;</a>
+            </div>
             <article class="featured-card">
                 <div class="card-media" aria-hidden="true"></div>
                 <div class="card-body">
