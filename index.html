@@ -882,7 +882,7 @@
             el.setAttribute('data-article-id', article.id);
             el.style.cursor = 'pointer';
             el.addEventListener('click', function() {
-                window.location.href = 'article.html?id=' + encodeURIComponent(article.id);
+                window.location.href = '/article/' + encodeURIComponent(article.id);
             });
             el.classList.add('filled');
         }

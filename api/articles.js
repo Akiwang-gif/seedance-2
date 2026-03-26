@@ -148,7 +148,7 @@ function setAttr(tag, name, value) {
 function normalizeAnchorTitle(href) {
   const link = String(href || '').trim();
   if (!link || link.startsWith('#')) return 'Jump to section on Seedance-2';
-  if (/article\.html\?id=/i.test(link)) return 'Read this related Seedance-2 article';
+  if (/article\.html\?id=|\/article\//i.test(link)) return 'Read this related Seedance-2 article';
   if (link.startsWith('/') || /seedance-2\.info/i.test(link)) return 'Read more on Seedance-2';
   return 'Open external source for reference';
 }

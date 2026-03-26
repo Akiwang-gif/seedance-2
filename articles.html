@@ -639,7 +639,7 @@
                     '</div>';
 
                 card.addEventListener('click', function() {
-                    window.location.href = 'article.html?id=' + encodeURIComponent(article.id);
+                    window.location.href = '/article/' + encodeURIComponent(article.id);
                 });
                 gridEl.appendChild(card);
             });

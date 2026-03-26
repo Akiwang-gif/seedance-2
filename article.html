@@ -424,7 +424,7 @@
             document.getElementById('notFound').style.display = 'none';
             document.getElementById('articleContent').style.display = 'block';
             document.title = (article.title || 'AI video news article') + ' · Seedance-2';
-            var canonicalUrl = 'https://seedance-2.info/article.html?id=' + encodeURIComponent(article.id || '');
+            var canonicalUrl = 'https://seedance-2.info/article/' + encodeURIComponent(article.id || '');
             var canonicalLink = document.getElementById('canonicalLink');
             if (canonicalLink) canonicalLink.setAttribute('href', canonicalUrl);
             var altEn = document.getElementById('altEn');
@@ -565,7 +565,7 @@
             var nextIndex = index - 1;
             if (prevIndex < sorted.length) {
                 var prev = sorted[prevIndex];
-                prevLink.href = 'article.html?id=' + encodeURIComponent(prev.id);
+                prevLink.href = '/article/' + encodeURIComponent(prev.id);
                 prevTitle.textContent = prev.title || 'Previous article';
                 prevLink.setAttribute('title', 'Previous: ' + (prev.title || 'article on Seedance-2'));
                 prevLink.style.display = 'block';
@@ -576,7 +576,7 @@
             }
             if (nextIndex >= 0) {
                 var next = sorted[nextIndex];
-                nextLink.href = 'article.html?id=' + encodeURIComponent(next.id);
+                nextLink.href = '/article/' + encodeURIComponent(next.id);
                 nextTitle.textContent = next.title || 'Next article';
                 nextLink.setAttribute('title', 'Next: ' + (next.title || 'article on Seedance-2'));
                 nextLink.style.display = 'block';
