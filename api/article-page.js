@@ -127,6 +127,16 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // Keep normal user experience unchanged: humans use the original rich client page.
+  // Crawlers still get server-rendered HTML for indexing.
+  const ua = String(req.headers['user-agent'] || '').toLowerCase();
+  const isBot = /(googlebot|bingbot|baiduspider|yandexbot|duckduckbot|slurp|facebookexternalhit|twitterbot|linkedinbot|embedly|pinterest|applebot|petalbot|bytespider|sogou|semrushbot|ahrefsbot|mj12bot)/i.test(ua);
+  if (!isBot) {
+    res.writeHead(302, { Location: '/article.html?id=' + encodeURIComponent(id) });
+    res.end();
+    return;
+  }
+
   const articles = (await getArticles()).slice().sort(compareArticles);
   const articleIndex = articles.findIndex((a) => String(a.id || '') === id);
   if (articleIndex === -1) {
@@ -167,6 +177,9 @@ module.exports = async (req, res) => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="shortcut icon" href="/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
   <title>${title} · Seedance-2</title>
   <meta name="robots" content="index, follow">
   <meta name="description" content="${description}">
