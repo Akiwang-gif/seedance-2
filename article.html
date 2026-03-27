@@ -392,7 +392,16 @@
     <script>
     (function() {
         var params = new URLSearchParams(window.location.search);
-        var id = params.get('id');
+        var id = (params.get('id') || '').trim();
+        if (!id) {
+            var pathMatch = window.location.pathname.match(/^\/article\/([^/?#]+)/i);
+            if (pathMatch && pathMatch[1]) id = decodeURIComponent(pathMatch[1]);
+        }
+        // Guard against placeholder links like article.html?id={id}
+        if (/^\{.+\}$/.test(id)) {
+            window.location.replace('articles.html');
+            return;
+        }
         var articleLd = null;
         var breadcrumbLd = null;
 
