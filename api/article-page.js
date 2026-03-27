@@ -130,7 +130,7 @@ module.exports = async (req, res) => {
   // Keep normal user experience unchanged: humans use the original rich client page.
   // Crawlers still get server-rendered HTML for indexing.
   const ua = String(req.headers['user-agent'] || '').toLowerCase();
-  const isBot = /(googlebot|bingbot|baiduspider|yandexbot|duckduckbot|slurp|facebookexternalhit|twitterbot|linkedinbot|embedly|pinterest|applebot|petalbot|bytespider|sogou|semrushbot|ahrefsbot|mj12bot)/i.test(ua);
+  const isBot = /(googlebot|google-inspectiontool|googleother|adsbot-google|bingbot|baiduspider|yandexbot|duckduckbot|slurp|facebookexternalhit|twitterbot|linkedinbot|embedly|pinterest|applebot|petalbot|bytespider|sogou|semrushbot|ahrefsbot|mj12bot)/i.test(ua);
   if (!isBot) {
     res.writeHead(302, { Location: '/article.html?id=' + encodeURIComponent(id) });
     res.end();
