@@ -9,4 +9,5 @@ Allow: /api/articles/
 Disallow: /admin.html
 Disallow: /api/
 
-Sitemap: https://seedance-2.info/sitemap.xml
+# Prefer www: sitemap returns 200 without an extra apex→www hop (helps GSC fetch).
+Sitemap: https://www.seedance-2.info/sitemap.xml

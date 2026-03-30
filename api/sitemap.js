@@ -76,6 +76,14 @@ function xmlEscape(text) {
     .replace(/'/g, '&apos;');
 }
 
+/** Invalid dates would make toISOString() throw and break the whole sitemap (GSC: couldn't fetch). */
+function lastmodIso(value) {
+  if (value == null || value === '') return null;
+  const t = new Date(value);
+  if (Number.isNaN(t.getTime())) return null;
+  return t.toISOString();
+}
+
 async function getArticles() {
   const store = getStore();
   if (!store) return [];
@@ -126,10 +134,11 @@ module.exports = async (req, res) => {
   }).join('\n');
 
   const articleXml = articleUrls.map((u) => {
+    const lm = lastmodIso(u.lastmod);
     return [
       '  <url>',
       '    <loc>' + xmlEscape(u.loc) + '</loc>',
-      u.lastmod ? '    <lastmod>' + xmlEscape(new Date(u.lastmod).toISOString()) + '</lastmod>' : '',
+      lm ? '    <lastmod>' + xmlEscape(lm) + '</lastmod>' : '',
       '    <changefreq>' + u.changefreq + '</changefreq>',
       '    <priority>' + u.priority + '</priority>',
       '  </url>',
