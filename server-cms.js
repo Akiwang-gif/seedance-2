@@ -83,6 +83,38 @@ const server = http.createServer(async (req, res) => {
   const pathname = parsed.pathname || '/';
   const p = pathname === '/' ? '/index.html' : pathname;
 
+  // API: GET|POST /api/cms-verify — admin login gate (same behavior as Vercel api/cms-verify.js)
+  if (/^\/api\/cms-verify\/?$/.test(pathname)) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization');
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204).end();
+      return;
+    }
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      res.writeHead(405, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Method not allowed' }));
+      return;
+    }
+    res.setHeader('Content-Type', 'application/json');
+    const secret = String(process.env.CMS_WRITE_SECRET || '').trim();
+    if (!secret) {
+      res.writeHead(200);
+      res.end(JSON.stringify({ ok: true, noSecretRequired: true }));
+      return;
+    }
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+    if (token !== secret) {
+      res.writeHead(401);
+      res.end(JSON.stringify({ ok: false }));
+      return;
+    }
+    res.writeHead(200);
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
   // API: GET /api/articles
   if (req.method === 'GET' && (pathname === '/api/articles' || pathname === '/api/articles/')) {
     res.setHeader('Content-Type', 'application/json');

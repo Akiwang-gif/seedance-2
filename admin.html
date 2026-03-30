@@ -364,9 +364,32 @@
             .site-nav-search { width: 100%; }
             .site-nav-search input[type="search"] { flex: 1; width: auto; min-width: 0; }
         }
+        .cms-gate {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+        }
+        .cms-gate-inner { max-width: 420px; width: 100%; }
+        .cms-gate-inner #gateBtn { margin-top: 1rem; width: 100%; padding: 0.65rem 1rem; font-weight: 600; cursor: pointer; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-family: inherit; font-size: 1rem; }
+        .cms-gate-inner #gateBtn:hover { opacity: 0.92; }
+        .cms-gate-inner #gateBtn:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body>
+    <div id="cmsGate" class="cms-gate" role="dialog" aria-labelledby="gateTitle">
+        <div class="wrap cms-gate-inner">
+            <h1 id="gateTitle">后台登录</h1>
+            <p class="sub">请输入与服务器环境变量 <code>CMS_WRITE_SECRET</code> 一致的密钥，验证通过后将进入文章编辑界面。（本机运行 <code>node server-cms.js</code> 且未设置该变量时，可直接进入。）</p>
+            <label for="gateKey">密钥</label>
+            <input type="password" id="gateKey" name="gateKey" autocomplete="current-password" placeholder="粘贴密钥">
+            <button type="button" id="gateBtn">进入编辑</button>
+            <p id="gateErr" class="msg error" style="display:none;margin-top:0.75rem;" role="alert"></p>
+        </div>
+    </div>
+    <div id="cmsMain" class="cms-main" style="display:none">
     <nav class="site-nav-bar" aria-label="Site navigation">
         <div class="site-nav-bar-inner">
             <div class="site-nav-links">
@@ -384,14 +407,10 @@
     </nav>
     <div class="wrap">
         <h1>Upload Articles</h1>
-        <p class="sub">Seedance-2 admin. <a href="index.html" title="Return to the Seedance-2 homepage">Back to Home</a>. Start server: <strong>restart-cms-5000.bat</strong> (recommended) or start-cms.bat</p>
-
-        <div class="card">
-            <h2>API key</h2>
-            <label for="cmsWriteSecret">CMS write secret</label>
-            <input type="password" id="cmsWriteSecret" name="cmsWriteSecret" autocomplete="off" placeholder="Same as CMS_WRITE_SECRET on Vercel (production)">
-            <p class="sub" style="margin-top:0.5rem;">Required to publish, reorder, delete, or upload images on the deployed site. Match the value in Vercel → Settings → Environment Variables. Stored only in this tab (session storage). Local <code>node server-cms.js</code> does not need a key unless you set <code>CMS_WRITE_SECRET</code>.</p>
-        </div>
+        <p class="sub" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;justify-content:space-between;">
+            <span>Seedance-2 admin. <a href="index.html" title="Return to the Seedance-2 homepage">Back to Home</a>. Local server: <strong>restart-cms-5000.bat</strong> or <code>node server-cms.js</code></span>
+            <button type="button" id="cmsSignOut" class="tool-btn" style="flex-shrink:0;">退出登录</button>
+        </p>
 
         <div class="card">
             <h2 id="formTitle">New Article</h2>
@@ -556,6 +575,7 @@
             <p class="copyright">&copy; 2026 Seedance-2. All rights reserved. | seedance-2.info</p>
         </div>
     </footer>
+    </div>
 
     <script>
         (function() {
@@ -573,10 +593,24 @@
             var draggedArticleId = null;
             var orderDirty = false;
 
+            var cmsGate = document.getElementById('cmsGate');
+            var cmsMain = document.getElementById('cmsMain');
+            var gateKey = document.getElementById('gateKey');
+            var gateBtn = document.getElementById('gateBtn');
+            var gateErr = document.getElementById('gateErr');
+
+            function showEditor() {
+                if (cmsGate) cmsGate.style.display = 'none';
+                if (cmsMain) cmsMain.style.display = 'block';
+                loadList();
+            }
+            function showLogin() {
+                if (cmsGate) cmsGate.style.display = 'flex';
+                if (cmsMain) cmsMain.style.display = 'none';
+            }
+
             function authHeaders() {
-                var el = document.getElementById('cmsWriteSecret');
-                var k = (el && el.value) ? String(el.value).trim() : '';
-                if (!k) k = sessionStorage.getItem('cms_write_secret') || '';
+                var k = sessionStorage.getItem('cms_write_secret') || '';
                 k = String(k).trim();
                 if (!k) return {};
                 return { Authorization: 'Bearer ' + k };
@@ -587,17 +621,39 @@
                 if (a.Authorization) h.Authorization = a.Authorization;
                 return h;
             }
-            (function initCmsKey() {
-                var el = document.getElementById('cmsWriteSecret');
-                if (!el) return;
+
+            function verifyWithHeaders(headers) {
+                return fetch(apiBase() + '/api/cms-verify', { method: 'GET', headers: headers || {} })
+                    .then(function(r) {
+                        return r.json().then(function(j) { return { r: r, j: j }; }).catch(function() { return { r: r, j: {} }; });
+                    });
+            }
+
+            function trySession() {
                 var saved = sessionStorage.getItem('cms_write_secret');
-                if (saved) el.value = saved;
-                el.addEventListener('change', function() {
-                    var v = String(el.value || '').trim();
-                    if (v) sessionStorage.setItem('cms_write_secret', v);
-                    else sessionStorage.removeItem('cms_write_secret');
-                });
-            })();
+                var h = {};
+                if (saved) h.Authorization = 'Bearer ' + String(saved).trim();
+                return verifyWithHeaders(h).then(function(x) {
+                    if (x.r.status === 503) {
+                        if (gateErr) {
+                            gateErr.textContent = (x.j && x.j.error) ? x.j.error : '服务器未配置 CMS_WRITE_SECRET';
+                            gateErr.style.display = 'block';
+                        }
+                        showLogin();
+                        return;
+                    }
+                    if (x.r.ok && x.j && x.j.noSecretRequired) {
+                        showEditor();
+                        return;
+                    }
+                    if (x.r.ok && x.j && x.j.ok && saved) {
+                        showEditor();
+                        return;
+                    }
+                    sessionStorage.removeItem('cms_write_secret');
+                    showLogin();
+                }).catch(function() { showLogin(); });
+            }
 
             function apiBase() {
                 return window.location.origin;
@@ -1234,7 +1290,49 @@
                     .finally(function() { submitBtn.disabled = false; });
             });
 
-            loadList();
+            if (gateBtn && gateKey) {
+                gateBtn.addEventListener('click', function() {
+                    if (gateErr) { gateErr.style.display = 'none'; gateErr.textContent = ''; }
+                    var key = String(gateKey.value || '').trim();
+                    gateBtn.disabled = true;
+                    var h = {};
+                    if (key) h.Authorization = 'Bearer ' + key;
+                    verifyWithHeaders(h)
+                        .then(function(x) {
+                            if (x.r.status === 503) throw new Error((x.j && x.j.error) || '服务器未配置密钥');
+                            if (x.r.ok && x.j && x.j.noSecretRequired) {
+                                sessionStorage.removeItem('cms_write_secret');
+                                showEditor();
+                                return;
+                            }
+                            if (!x.r.ok || !x.j || !x.j.ok) throw new Error('密钥错误');
+                            sessionStorage.setItem('cms_write_secret', key);
+                            showEditor();
+                        })
+                        .catch(function(e) {
+                            sessionStorage.removeItem('cms_write_secret');
+                            if (gateErr) {
+                                gateErr.textContent = e.message || '验证失败';
+                                gateErr.style.display = 'block';
+                            }
+                        })
+                        .finally(function() { gateBtn.disabled = false; });
+                });
+                gateKey.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') gateBtn.click();
+                });
+            }
+
+            var signOutBtn = document.getElementById('cmsSignOut');
+            if (signOutBtn) {
+                signOutBtn.addEventListener('click', function() {
+                    sessionStorage.removeItem('cms_write_secret');
+                    if (gateKey) gateKey.value = '';
+                    showLogin();
+                });
+            }
+
+            trySession();
         })();
     </script>
 </body>
