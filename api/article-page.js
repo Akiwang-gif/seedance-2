@@ -127,15 +127,8 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Keep normal user experience unchanged: humans use the original rich client page.
-  // Crawlers still get server-rendered HTML for indexing.
-  const ua = String(req.headers['user-agent'] || '').toLowerCase();
-  const isBot = /(googlebot|google-inspectiontool|googleother|adsbot-google|bingbot|baiduspider|yandexbot|duckduckbot|slurp|facebookexternalhit|twitterbot|linkedinbot|embedly|pinterest|applebot|petalbot|bytespider|sogou|semrushbot|ahrefsbot|mj12bot)/i.test(ua);
-  if (!isBot) {
-    res.writeHead(302, { Location: '/article.html?id=' + encodeURIComponent(id) });
-    res.end();
-    return;
-  }
+  // Always return 200 + SSR HTML here (no redirect). Redirect chains caused
+  // Google Search Console "redirect error" for /article/:id when UA detection missed.
 
   const articles = (await getArticles()).slice().sort(compareArticles);
   const articleIndex = articles.findIndex((a) => String(a.id || '') === id);
@@ -151,6 +144,16 @@ module.exports = async (req, res) => {
   const imageUrl = escapeHtml(article.imageUrl || 'https://seedance-2.info/og-image.png');
   const canonicalUrl = 'https://seedance-2.info/article/' + encodeURIComponent(id);
   const publishedAtIso = article.publishedAt ? new Date(article.publishedAt).toISOString() : null;
+  let publishedDisplay = '';
+  if (article.publishedAt) {
+    try {
+      publishedDisplay = new Date(article.publishedAt).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric',
+      });
+    } catch (e) {
+      publishedDisplay = String(article.publishedAt);
+    }
+  }
   const bodyHtml = safeBodyHtml(article.bodyHtml || '');
   const prev = articles[articleIndex + 1] || null;
   const next = articles[articleIndex - 1] || null;
@@ -207,10 +210,10 @@ module.exports = async (req, res) => {
   </style>
 </head>
 <body>
-  <p><a href="/articles.html">← Back to articles</a></p>
+  <p><a href="/articles.html">← Back to articles</a> · <a href="/article.html?id=${encodeURIComponent(id)}">Open full layout</a></p>
   <span class="cat">${escapeHtml(article.category || 'News')}</span>
   <h1>${title}</h1>
-  <p class="meta">${escapeHtml(article.author ? 'By ' + article.author + ' · ' : '')}${escapeHtml(article.publishedAt || '')}</p>
+  <p class="meta">${escapeHtml(article.author ? 'By ' + article.author + ' · ' : '')}${escapeHtml(publishedDisplay)}</p>
   ${article.imageUrl ? `<img class="hero" src="${imageUrl}" alt="${title}">` : ''}
   <article class="content">${bodyHtml || `<p>${description}</p>`}</article>
   <nav class="nav">
