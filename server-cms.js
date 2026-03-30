@@ -10,6 +10,19 @@ const url = require('url');
 const formidable = require('formidable');
 
 const PORT = process.env.PORT || 5000;
+
+/** When CMS_WRITE_SECRET is set, require Authorization: Bearer for mutations (aligns with Vercel API). */
+function checkWriteAuth(req, res) {
+  const secret = String(process.env.CMS_WRITE_SECRET || '').trim();
+  if (!secret) return true;
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  if (token === secret) return true;
+  res.writeHead(401, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+  res.end(JSON.stringify({ error: 'Unauthorized. Paste the same API key as in admin, or unset CMS_WRITE_SECRET for local open dev.' }));
+  return false;
+}
+
 const DATA_DIR = path.join(__dirname, 'data');
 const ARTICLES_FILE = path.join(DATA_DIR, 'articles.json');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -86,6 +99,7 @@ const server = http.createServer(async (req, res) => {
 
   // API: POST /api/articles (JSON or multipart with image upload)
   if (req.method === 'POST' && (pathname === '/api/articles' || pathname === '/api/articles/')) {
+    if (!checkWriteAuth(req, res)) return;
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
     const contentType = (req.headers['content-type'] || '').toLowerCase();
@@ -223,6 +237,7 @@ const server = http.createServer(async (req, res) => {
 
   // API: /api/upload-image (POST = upload, GET = check)
   if (/^\/api\/upload-image\/?$/.test(pathname)) {
+    if (req.method === 'POST' && !checkWriteAuth(req, res)) return;
     if (req.method !== 'POST') {
       res.writeHead(405, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Method not allowed. Use POST with multipart/form-data and field "image".' }));
@@ -300,6 +315,7 @@ const server = http.createServer(async (req, res) => {
 
   // API: PUT /api/articles/:id (update)
   if (req.method === 'PUT' && /^\/api\/articles\/[^/]+$/.test(pathname)) {
+    if (!checkWriteAuth(req, res)) return;
     const id = pathname.replace(/^\/api\/articles\//, '');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -372,6 +388,7 @@ const server = http.createServer(async (req, res) => {
 
   // API: DELETE /api/articles/:id
   if (req.method === 'DELETE' && /^\/api\/articles\/[^/]+$/.test(pathname)) {
+    if (!checkWriteAuth(req, res)) return;
     const id = pathname.replace(/^\/api\/articles\//, '');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,6 +1,7 @@
 const formidable = require('formidable');
 const fs = require('fs');
 const { put } = require('@vercel/blob');
+const { requireWriteAuth } = require('./_lib/cms-auth');
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
@@ -23,6 +24,7 @@ function getFile(files, key) {
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
     res.writeHead(204).end();
     return;
@@ -32,6 +34,7 @@ module.exports = async (req, res) => {
     res.end(JSON.stringify({ error: 'Method not allowed. Use POST with multipart/form-data and field "image".' }));
     return;
   }
+  if (!requireWriteAuth(req, res)) return;
   const ct = (req.headers['content-type'] || '').toLowerCase();
   if (!ct.includes('multipart/form-data')) {
     res.writeHead(400, CORS);

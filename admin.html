@@ -387,6 +387,13 @@
         <p class="sub">Seedance-2 admin. <a href="index.html" title="Return to the Seedance-2 homepage">Back to Home</a>. Start server: <strong>restart-cms-5000.bat</strong> (recommended) or start-cms.bat</p>
 
         <div class="card">
+            <h2>API key</h2>
+            <label for="cmsWriteSecret">CMS write secret</label>
+            <input type="password" id="cmsWriteSecret" name="cmsWriteSecret" autocomplete="off" placeholder="Same as CMS_WRITE_SECRET on Vercel (production)">
+            <p class="sub" style="margin-top:0.5rem;">Required to publish, reorder, delete, or upload images on the deployed site. Match the value in Vercel → Settings → Environment Variables. Stored only in this tab (session storage). Local <code>node server-cms.js</code> does not need a key unless you set <code>CMS_WRITE_SECRET</code>.</p>
+        </div>
+
+        <div class="card">
             <h2 id="formTitle">New Article</h2>
             <p id="formSub" class="sublabel" style="display:none; margin-bottom:1rem;"><button type="button" id="cancelEditBtn" class="tool-btn">Cancel edit</button> — editing existing article</p>
             <form id="form">
@@ -566,6 +573,32 @@
             var draggedArticleId = null;
             var orderDirty = false;
 
+            function authHeaders() {
+                var el = document.getElementById('cmsWriteSecret');
+                var k = (el && el.value) ? String(el.value).trim() : '';
+                if (!k) k = sessionStorage.getItem('cms_write_secret') || '';
+                k = String(k).trim();
+                if (!k) return {};
+                return { Authorization: 'Bearer ' + k };
+            }
+            function jsonAuthHeaders() {
+                var h = { 'Content-Type': 'application/json' };
+                var a = authHeaders();
+                if (a.Authorization) h.Authorization = a.Authorization;
+                return h;
+            }
+            (function initCmsKey() {
+                var el = document.getElementById('cmsWriteSecret');
+                if (!el) return;
+                var saved = sessionStorage.getItem('cms_write_secret');
+                if (saved) el.value = saved;
+                el.addEventListener('change', function() {
+                    var v = String(el.value || '').trim();
+                    if (v) sessionStorage.setItem('cms_write_secret', v);
+                    else sessionStorage.removeItem('cms_write_secret');
+                });
+            })();
+
             function apiBase() {
                 return window.location.origin;
             }
@@ -655,7 +688,7 @@
                     btn.addEventListener('click', function() {
                         var id = btn.getAttribute('data-id');
                         if (!id || !confirm('Delete this article?')) return;
-                        fetch(apiBase() + '/api/articles/' + id, { method: 'DELETE' })
+                        fetch(apiBase() + '/api/articles/' + id, { method: 'DELETE', headers: authHeaders() })
                             .then(function(r) { return r.json(); })
                             .then(function() { loadList(); })
                             .catch(function() { showMessage('Failed to delete.', true); });
@@ -698,7 +731,7 @@
                     var ids = orderedArticlesCache.map(function(a) { return a.id; }).filter(Boolean);
                     fetch(apiBase() + '/api/articles', {
                         method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: jsonAuthHeaders(),
                         body: JSON.stringify({ ids: ids })
                     })
                     .then(function(r) {
@@ -1066,7 +1099,7 @@
                 if (!file || !file.type.match(/^image\//)) return;
                 var fd = new FormData();
                 fd.append('image', file);
-                fetch(apiBase() + '/api/upload-image', { method: 'POST', body: fd })
+                fetch(apiBase() + '/api/upload-image', { method: 'POST', headers: authHeaders(), body: fd })
                     .then(function(r) {
                         return r.text().then(function(text) {
                             if (!r.ok) {
@@ -1103,7 +1136,7 @@
                         if (!file) return;
                         var fd = new FormData();
                         fd.append('image', file);
-                        fetch(apiBase() + '/api/upload-image', { method: 'POST', body: fd })
+                        fetch(apiBase() + '/api/upload-image', { method: 'POST', headers: authHeaders(), body: fd })
                             .then(function(r) { if (!r.ok) throw new Error('Upload failed'); return r.json(); })
                             .then(function(data) {
                                 var u = data.url || '';
@@ -1172,7 +1205,7 @@
                     url = apiBase() + '/api/articles/' + editingArticleId;
                     method = 'PUT';
                 }
-                fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+                fetch(url, { method: method, headers: jsonAuthHeaders(), body: JSON.stringify(payload) })
                     .then(function(r) { if (!r.ok) throw new Error(r.statusText); return r.json(); })
                     .then(function() {
                         if (editingArticleId) {

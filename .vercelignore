@@ -1,0 +1,4 @@
+# Next.js app under /app is not used by this deployment (vercel.json uses static root + /api).
+app/
+next.config.js
+server.js

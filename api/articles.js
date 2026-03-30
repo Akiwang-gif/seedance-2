@@ -87,6 +87,7 @@ function getStore() {
 }
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+const { requireWriteAuth } = require('./_lib/cms-auth');
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
@@ -217,6 +218,7 @@ async function setArticles(articles) {
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
     res.writeHead(204).end();
     return;
@@ -234,6 +236,7 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'PATCH') {
+    if (!requireWriteAuth(req, res)) return;
     if (!getStore()) {
       res.writeHead(503, CORS);
       res.end(JSON.stringify({ error: 'KV/Redis not configured. Add Vercel KV or Redis in Storage and connect to this project.' }));
@@ -272,6 +275,7 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'POST') {
+    if (!requireWriteAuth(req, res)) return;
     if (!getStore()) {
       res.writeHead(503, CORS);
       res.end(JSON.stringify({ error: 'KV/Redis not configured. Add Vercel KV or Redis in Storage and connect to this project.' }));
