@@ -101,7 +101,7 @@ async function getArticles() {
 }
 
 module.exports = async (req, res) => {
-  const base = 'https://seedance-2.info';
+  const base = 'https://www.seedance-2.info';
   const staticUrls = [
     { path: '/', changefreq: 'daily', priority: '1.0' },
     { path: '/articles.html', changefreq: 'daily', priority: '0.9' },

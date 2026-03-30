@@ -119,7 +119,7 @@ H1: "AI Video Generator: Turn Text & Images into Videos"
 <meta property="og:type" content="website">
 <meta property="og:title" content="AI Video Generator - Create Videos from Text & Images">
 <meta property="og:description" content="...">
-<meta property="og:image" content="https://seedance-2.info/og-image.jpg">
+<meta property="og:image" content="https://www.seedance-2.info/og-image.jpg">
 ```
 
 #### Twitter Card Tags
@@ -174,7 +174,7 @@ H1: "AI Video Generator: Turn Text & Images into Videos"
 
 #### URL Structure
 ```
-Canonical: https://seedance-2.info/
+Canonical: https://www.seedance-2.info/
 ```
 ✅ Clean, keyword-rich domain name
 
@@ -232,7 +232,7 @@ Canonical: https://seedance-2.info/
 ```html
 <html lang="en">
 <meta http-equiv="content-language" content="en">
-<link rel="alternate" hreflang="en" href="https://seedance-2.info/">
+<link rel="alternate" hreflang="en" href="https://www.seedance-2.info/">
 ```
 
 ---
