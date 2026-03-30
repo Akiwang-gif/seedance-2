@@ -3,6 +3,14 @@
   "buildCommand": "echo 'Static + API'",
   "outputDirectory": ".",
   "installCommand": "npm install",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "seedance-2.info" }],
+      "destination": "https://www.seedance-2.info/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/article/:id", "destination": "/article.html?id=:id" }
