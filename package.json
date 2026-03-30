@@ -4,27 +4,15 @@
   "private": true,
   "engines": { "node": ">=20" },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "build": "echo Static + API",
     "start": "node server-cms.js",
-    "start:next": "next start",
-    "lint": "next lint",
     "cms": "node server-cms.js"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.2",
     "@vercel/blob": "^0.24.0",
     "@upstash/redis": "^1.28.0",
     "@vercel/kv": "^1.0.0",
     "redis": "^4.6.0",
-    "formidable": "^3.5.4",
-    "next": "^14.2.0",
-    "next-auth": "^4.24.13",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.0"
+    "formidable": "^3.5.4"
   }
 }
