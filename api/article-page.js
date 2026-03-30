@@ -118,6 +118,8 @@ function plainTextExcerpt(article) {
   return clean.length > 180 ? clean.slice(0, 177).trim() + '...' : clean;
 }
 
+// Optional: GET /api/article-page?id= still returns SSR HTML. Canonical public URLs use
+// vercel rewrite /article/:id → article.html (full UI + crawlable when JS runs).
 module.exports = async (req, res) => {
   const rawId = req.query.id;
   const id = String(rawId || '').trim();

@@ -1,7 +1,11 @@
 User-agent: *
 Allow: /
 
-# Keep admin and API endpoints out of search index.
+# Article list JSON is fetched by article.html when rendering /article/:id — allow crawlers to load it.
+Allow: /api/articles
+Allow: /api/articles/
+
+# Keep admin and other API endpoints out of search index.
 Disallow: /admin.html
 Disallow: /api/
 
