@@ -320,23 +320,23 @@
 <body>
     <header class="site-header" role="banner">
         <div class="logo">
-            <a href="index.html" title="Seedance-2 homepage — AI news, Seedance, and AI video coverage" aria-label="Seedance-2 Home">
-                <img src="icon.png" alt="Seedance-2 AI news website logo" class="site-icon" width="32" height="32">
+            <a href="/index.html" title="Seedance-2 homepage — AI news, Seedance, and AI video coverage" aria-label="Seedance-2 Home">
+                <img src="/icon.png" alt="Seedance-2 AI news website logo" class="site-icon" width="32" height="32">
                 Seedance-2
             </a>
         </div>
-        <a href="index.html" class="back-link" title="Return to the Seedance-2 homepage">Back to Home</a>
+        <a href="/index.html" class="back-link" title="Return to the Seedance-2 homepage">Back to Home</a>
     </header>
 
     <nav class="site-nav-bar" aria-label="Site navigation">
         <div class="site-nav-bar-inner">
             <div class="site-nav-links">
-                <a href="articles.html" title="All published articles — news and analysis on Seedance-2">Articles</a>
-                <a href="about-us.html" title="About Seedance-2 — editorial mission and site information">About Us</a>
-                <a href="privacy-policy.html" title="Privacy policy — how Seedance-2 handles your data">Privacy Policy</a>
-                <a href="terms-of-service.html" title="Terms of service — rules for using Seedance-2">Terms of Service</a>
+                <a href="/articles.html" title="All published articles — news and analysis on Seedance-2">Articles</a>
+                <a href="/about-us.html" title="About Seedance-2 — editorial mission and site information">About Us</a>
+                <a href="/privacy-policy.html" title="Privacy policy — how Seedance-2 handles your data">Privacy Policy</a>
+                <a href="/terms-of-service.html" title="Terms of service — rules for using Seedance-2">Terms of Service</a>
             </div>
-            <form class="site-nav-search" action="articles.html" method="get" role="search">
+            <form class="site-nav-search" action="/articles.html" method="get" role="search">
                 <label class="visually-hidden" for="nav-search-q-article">Search articles</label>
                 <input id="nav-search-q-article" type="search" name="q" placeholder="Search articles…" autocomplete="off">
                 <button type="submit"><span class="btn-label">Search</span></button>
@@ -348,7 +348,7 @@
         <div class="article-not-found" id="notFound" style="display:none;" role="status" aria-live="polite">
             <p class="not-found-lead">Article not found</p>
             <p>The article may have been removed or the link is incorrect.</p>
-            <a href="index.html" class="back-link" title="Return to the Seedance-2 homepage">Back to Home</a>
+            <a href="/index.html" class="back-link" title="Return to the Seedance-2 homepage">Back to Home</a>
         </div>
         <article id="articleContent" style="display:none;">
             <div class="article-media" id="articleMedia"></div>
@@ -378,9 +378,9 @@
             <div class="footer-col">
                 <h2>About</h2>
                 <ul>
-                    <li><a href="about-us.html" title="About Seedance-2 — editorial mission and site information">About Us</a></li>
-                    <li><a href="privacy-policy.html" title="Privacy policy — how Seedance-2 handles your data">Privacy Policy</a></li>
-                    <li><a href="terms-of-service.html" title="Terms of service — rules for using Seedance-2">Terms of Service</a></li>
+                    <li><a href="/about-us.html" title="About Seedance-2 — editorial mission and site information">About Us</a></li>
+                    <li><a href="/privacy-policy.html" title="Privacy policy — how Seedance-2 handles your data">Privacy Policy</a></li>
+                    <li><a href="/terms-of-service.html" title="Terms of service — rules for using Seedance-2">Terms of Service</a></li>
                 </ul>
             </div>
         </div>
@@ -399,7 +399,7 @@
         }
         // Guard against placeholder links like article.html?id={id}
         if (/^\{.+\}$/.test(id)) {
-            window.location.replace('articles.html');
+            window.location.replace('/articles.html');
             return;
         }
         var articleLd = null;
