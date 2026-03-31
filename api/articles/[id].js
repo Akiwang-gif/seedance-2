@@ -1,4 +1,4 @@
-// 若连接 KV 时用了自定义前缀，复制到 @vercel/kv 需要的变量名
+// Route: /api/articles/:id (get/update/delete single article)
 (function () {
   if (process.env.KV_REST_API_URL) return;
   var keys = Object.keys(process.env || {});
@@ -12,7 +12,6 @@
   }
 })();
 
-// 统一 store：优先 Upstash REST，再 @vercel/kv，再 REDIS_URL + node-redis（与 api/articles.js 一致）
 let kvStore = null;
 function getStore() {
   if (kvStore) return kvStore;
@@ -95,98 +94,9 @@ function parseBody(req) {
   });
 }
 
-function stripTags(html) {
-  return String(html || '')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function truncateText(text, maxLen) {
-  const s = String(text || '').trim();
-  if (!s || s.length <= maxLen) return s;
-  const cut = s.slice(0, maxLen - 1);
-  const lastSpace = cut.lastIndexOf(' ');
-  return (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim() + '…';
-}
-
-function isGenericAlt(text) {
-  const t = String(text || '').trim().toLowerCase();
-  if (!t) return true;
-  return ['image', 'photo', 'picture', 'img', 'article image', 'article content image', 'article content illustration'].includes(t);
-}
-
-function buildImageAlt(title, index, total) {
-  const cleanTitle = String(title || '').trim();
-  if (cleanTitle) {
-    if (total > 1) return `${cleanTitle} - supporting image ${index} of ${total}`;
-    return `${cleanTitle} - supporting image`;
-  }
-  if (total > 1) return `Seedance-2 AI news article supporting image ${index} of ${total}`;
-  return 'Seedance-2 AI news article supporting image';
-}
-
-function getAttr(tag, name) {
-  const re = new RegExp(`${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i');
-  const m = tag.match(re);
-  return m ? (m[2] || m[3] || m[4] || '') : '';
-}
-
-function setAttr(tag, name, value) {
-  const escaped = String(value).replace(/"/g, '&quot;');
-  const re = new RegExp(`\\s${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i');
-  if (re.test(tag)) return tag.replace(re, ` ${name}="${escaped}"`);
-  return tag.replace(/>$/, ` ${name}="${escaped}">`);
-}
-
-function normalizeAnchorTitle(href) {
-  const link = String(href || '').trim();
-  if (!link || link.startsWith('#')) return 'Jump to section on Seedance-2';
-  if (/article\.html\?id=|\/article\//i.test(link)) return 'Read this related Seedance-2 article';
-  if (link.startsWith('/') || /seedance-2\.info/i.test(link)) return 'Read more on Seedance-2';
-  return 'Open external source for reference';
-}
-
-function optimizeBodyHtml(bodyHtml, title) {
-  let html = String(bodyHtml || '').trim();
-  if (!html) return '';
-
-  html = html.replace(/<h1(\s[^>]*)?>/gi, '<h2$1>').replace(/<\/h1>/gi, '</h2>');
-
-  const imgTotal = (html.match(/<img\b/gi) || []).length;
-  let imgIndex = 0;
-  html = html.replace(/<img\b[^>]*>/gi, (imgTag) => {
-    imgIndex += 1;
-    let next = imgTag;
-    const alt = getAttr(next, 'alt');
-    if (isGenericAlt(alt)) next = setAttr(next, 'alt', buildImageAlt(title, imgIndex, imgTotal));
-    if (!getAttr(next, 'loading')) next = setAttr(next, 'loading', 'lazy');
-    if (!getAttr(next, 'decoding')) next = setAttr(next, 'decoding', 'async');
-    return next;
-  });
-
-  html = html.replace(/<a\b[^>]*>/gi, (aTag) => {
-    let next = aTag;
-    if (!getAttr(next, 'title')) next = setAttr(next, 'title', normalizeAnchorTitle(getAttr(next, 'href')));
-    if (/\btarget\s*=\s*("_blank"|'_blank'|_blank)/i.test(next) && !getAttr(next, 'rel')) {
-      next = setAttr(next, 'rel', 'noopener noreferrer');
-    }
-    return next;
-  });
-
-  return html;
-}
-
-function buildDescription(explicitDescription, title, bodyHtml) {
-  const explicit = truncateText(explicitDescription, 160);
-  if (explicit) return explicit;
-  const fromBody = truncateText(stripTags(bodyHtml), 160);
-  if (fromBody) return fromBody;
-  const cleanTitle = String(title || '').trim();
-  if (cleanTitle) return truncateText(`${cleanTitle} - latest Seedance AI tools news and analysis on Seedance-2.`, 160);
-  return 'Latest Seedance AI tools news and analysis on Seedance-2.';
+function normalizeStatus(value) {
+  const v = String(value || '').trim().toLowerCase();
+  return v === 'draft' ? 'draft' : 'published';
 }
 
 async function getArticles() {
@@ -195,7 +105,11 @@ async function getArticles() {
   try {
     const raw = await store.get('cms_articles');
     if (raw == null) return [];
-    return Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+      try { return JSON.parse(raw); } catch (_) { return []; }
+    }
+    return [];
   } catch (e) {
     return [];
   }
@@ -207,7 +121,6 @@ async function setArticles(articles) {
 }
 
 module.exports = async (req, res) => {
-  const id = req.query.id;
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
@@ -215,20 +128,28 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (!getStore()) {
+    res.writeHead(503, CORS);
+    res.end(JSON.stringify({ error: 'KV/Redis not configured. Add Vercel KV or Redis in Storage and connect to this project.' }));
+    return;
+  }
+
+  const id = String((req.query && req.query.id) || '').trim();
   if (!id) {
     res.writeHead(400, CORS);
-    res.end(JSON.stringify({ error: 'Missing id' }));
+    res.end(JSON.stringify({ error: 'Article id is required' }));
     return;
   }
 
   if (req.method === 'GET') {
     const articles = await getArticles();
-    const article = articles.find((a) => a.id === id);
+    const article = articles.find((a) => String(a && a.id) === id);
     if (!article) {
       res.writeHead(404, CORS);
       res.end(JSON.stringify({ error: 'Article not found' }));
       return;
     }
+    if (normalizeStatus(article.status) === 'draft' && !requireWriteAuth(req, res)) return;
     res.writeHead(200, CORS);
     res.end(JSON.stringify(article));
     return;
@@ -236,11 +157,6 @@ module.exports = async (req, res) => {
 
   if (req.method === 'PUT') {
     if (!requireWriteAuth(req, res)) return;
-    if (!getStore()) {
-      res.writeHead(503, CORS);
-      res.end(JSON.stringify({ error: 'KV/Redis not configured. Add Vercel KV or Redis in Storage.' }));
-      return;
-    }
     const ct = (req.headers['content-type'] || '').toLowerCase();
     if (!ct.includes('application/json')) {
       res.writeHead(400, CORS);
@@ -250,47 +166,51 @@ module.exports = async (req, res) => {
     try {
       const body = await parseBody(req);
       const articles = await getArticles();
-      const index = articles.findIndex((a) => a.id === id);
+      const index = articles.findIndex((a) => String(a && a.id) === id);
       if (index === -1) {
         res.writeHead(404, CORS);
         res.end(JSON.stringify({ error: 'Article not found' }));
         return;
       }
       const existing = articles[index];
-      const title = String(body.title ?? existing.title ?? '').trim();
-      let description = String(body.description ?? existing.description ?? '').trim();
-      const category = String(body.category ?? existing.category ?? 'News').trim() || 'News';
-      let imageUrl = String(body.imageUrl ?? existing.imageUrl ?? '').trim();
-      const author = String(body.author ?? existing.author ?? '').trim();
-      var parsedSortOrder = Number(body.sortOrder);
-      const sortOrder = Number.isFinite(parsedSortOrder)
-        ? parsedSortOrder
-        : (Number.isFinite(Number(existing.sortOrder)) ? Number(existing.sortOrder) : null);
-      const fontFamily = String(body.fontFamily ?? existing.fontFamily ?? 'Inter').trim() || 'Inter';
-      const fontSize = String(body.fontSize ?? existing.fontSize ?? '16px').trim() || '16px';
-      const color = String(body.color ?? existing.color ?? '#1d1d1f').trim() || '#1d1d1f';
-      const fontWeight = String(body.fontWeight ?? existing.fontWeight ?? 'normal').trim() || 'normal';
-      const fontStyle = String(body.fontStyle ?? existing.fontStyle ?? 'normal').trim() || 'normal';
-      const cardTitleFontFamily = String(body.cardTitleFontFamily ?? existing.cardTitleFontFamily ?? 'Inter').trim() || 'Inter';
-      const cardTitleFontSize = String(body.cardTitleFontSize ?? existing.cardTitleFontSize ?? '16px').trim() || '16px';
-      const cardTitleColor = String(body.cardTitleColor ?? existing.cardTitleColor ?? '#1d1d1f').trim() || '#1d1d1f';
-      const cardTitleFontWeight = String(body.cardTitleFontWeight ?? existing.cardTitleFontWeight ?? 'normal').trim() || 'normal';
-      const cardTitleFontStyle = String(body.cardTitleFontStyle ?? existing.cardTitleFontStyle ?? 'normal').trim() || 'normal';
-      let bodyHtml = String(body.bodyHtml ?? existing.bodyHtml ?? '').trim();
-      if (bodyHtml) bodyHtml = optimizeBodyHtml(bodyHtml, title);
-      description = buildDescription(description, title, bodyHtml);
-      if (bodyHtml) {
-        const m = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
-        if (m && m[1] && (m[1].includes('/') || m[1].startsWith('http'))) imageUrl = m[1];
-      }
+      const status = normalizeStatus(body.status ?? existing.status);
       const updated = {
         ...existing,
-        title, description, category, imageUrl, author,
-        fontFamily, fontSize, color, fontWeight, fontStyle,
-        cardTitleFontFamily, cardTitleFontSize, cardTitleColor, cardTitleFontWeight, cardTitleFontStyle,
+        title: String(body.title ?? existing.title ?? '').trim(),
+        description: String(body.description ?? existing.description ?? '').trim(),
+        category: String(body.category ?? existing.category ?? 'News').trim() || 'News',
+        imageUrl: String(body.imageUrl ?? existing.imageUrl ?? '').trim(),
+        author: String(body.author ?? existing.author ?? '').trim(),
+        fontFamily: String(body.fontFamily ?? existing.fontFamily ?? 'Inter').trim() || 'Inter',
+        fontSize: String(body.fontSize ?? existing.fontSize ?? '16px').trim() || '16px',
+        color: String(body.color ?? existing.color ?? '#1d1d1f').trim() || '#1d1d1f',
+        fontWeight: String(body.fontWeight ?? existing.fontWeight ?? 'normal').trim() || 'normal',
+        fontStyle: String(body.fontStyle ?? existing.fontStyle ?? 'normal').trim() || 'normal',
+        cardTitleFontFamily: String(body.cardTitleFontFamily ?? existing.cardTitleFontFamily ?? 'Inter').trim() || 'Inter',
+        cardTitleFontSize: String(body.cardTitleFontSize ?? existing.cardTitleFontSize ?? '16px').trim() || '16px',
+        cardTitleColor: String(body.cardTitleColor ?? existing.cardTitleColor ?? '#1d1d1f').trim() || '#1d1d1f',
+        cardTitleFontWeight: String(body.cardTitleFontWeight ?? existing.cardTitleFontWeight ?? 'normal').trim() || 'normal',
+        cardTitleFontStyle: String(body.cardTitleFontStyle ?? existing.cardTitleFontStyle ?? 'normal').trim() || 'normal',
+        bodyHtml: String(body.bodyHtml ?? existing.bodyHtml ?? '').trim(),
+        status,
+        updatedAt: new Date().toISOString(),
       };
-      if (sortOrder !== null) updated.sortOrder = sortOrder;
-      if (bodyHtml !== undefined) updated.bodyHtml = bodyHtml;
+      if (status === 'published') {
+        if (!updated.publishedAt) updated.publishedAt = new Date().toISOString();
+        if (!Number.isFinite(Number(updated.sortOrder))) {
+          updated.sortOrder = 0;
+          for (let i = 0; i < articles.length; i += 1) {
+            if (i === index) continue;
+            const a = articles[i];
+            if (normalizeStatus(a && a.status) !== 'published') continue;
+            const so = Number(a && a.sortOrder);
+            if (Number.isFinite(so)) articles[i] = { ...a, sortOrder: so + 1 };
+          }
+        }
+      } else {
+        updated.publishedAt = null;
+        delete updated.sortOrder;
+      }
       articles[index] = updated;
       await setArticles(articles);
       res.writeHead(200, CORS);
@@ -304,26 +224,11 @@ module.exports = async (req, res) => {
 
   if (req.method === 'DELETE') {
     if (!requireWriteAuth(req, res)) return;
-    if (!getStore()) {
-      res.writeHead(503, CORS);
-      res.end(JSON.stringify({ error: 'KV/Redis not configured. Add Vercel KV or Redis in Storage.' }));
-      return;
-    }
-    try {
-      const articles = await getArticles();
-      const next = articles.filter((a) => a.id !== id);
-      if (next.length === articles.length) {
-        res.writeHead(404, CORS);
-        res.end(JSON.stringify({ error: 'Article not found' }));
-        return;
-      }
-      await setArticles(next);
-      res.writeHead(200, CORS);
-      res.end(JSON.stringify({ ok: true }));
-    } catch (e) {
-      res.writeHead(500, CORS);
-      res.end(JSON.stringify({ error: e.message }));
-    }
+    const articles = await getArticles();
+    const next = articles.filter((a) => String(a && a.id) !== id);
+    await setArticles(next);
+    res.writeHead(200, CORS);
+    res.end(JSON.stringify({ ok: true }));
     return;
   }
 

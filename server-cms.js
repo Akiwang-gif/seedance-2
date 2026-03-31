@@ -63,6 +63,24 @@ function parseBody(req) {
   });
 }
 
+function normalizeStatus(value) {
+  const v = String(value || '').trim().toLowerCase();
+  return v === 'draft' ? 'draft' : 'published';
+}
+
+function sortPublishedForPublic(articles) {
+  return articles
+    .filter((a) => normalizeStatus(a && a.status) === 'published')
+    .sort((a, b) => {
+      const aHasOrder = Number.isFinite(Number(a && a.sortOrder));
+      const bHasOrder = Number.isFinite(Number(b && b.sortOrder));
+      if (aHasOrder && bHasOrder) return Number(a.sortOrder) - Number(b.sortOrder);
+      if (aHasOrder) return -1;
+      if (bHasOrder) return 1;
+      return (new Date((b && b.publishedAt) || 0)) - (new Date((a && a.publishedAt) || 0));
+    });
+}
+
 const MIME = {
   '.html': 'text/html',
   '.css': 'text/css',
@@ -121,7 +139,11 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     try {
       const articles = readArticles();
-      res.end(JSON.stringify(articles));
+      const scope = String((parsed.query && parsed.query.scope) || '').trim().toLowerCase();
+      const includeAll = scope === 'all';
+      if (includeAll && !checkWriteAuth(req, res)) return;
+      const normalized = articles.map((a) => ({ ...a, status: normalizeStatus(a && a.status) }));
+      res.end(JSON.stringify(includeAll ? normalized : sortPublishedForPublic(normalized)));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
@@ -142,6 +164,7 @@ const server = http.createServer(async (req, res) => {
       let fontFamily = '', fontSize = '', color = '', fontWeight = 'normal', fontStyle = 'normal';
       let cardTitleFontFamily = '', cardTitleFontSize = '', cardTitleColor = '', cardTitleFontWeight = 'normal', cardTitleFontStyle = 'normal';
       let bodyHtml = '';
+      let status = 'published';
 
       if (isMultipart) {
         ensureDataDir();
@@ -180,6 +203,7 @@ const server = http.createServer(async (req, res) => {
         cardTitleColor = String(get(fields, 'cardTitleColor')).trim() || '#1d1d1f';
         cardTitleFontWeight = String(get(fields, 'cardTitleFontWeight')).trim() || 'normal';
         cardTitleFontStyle = String(get(fields, 'cardTitleFontStyle')).trim() || 'normal';
+        status = normalizeStatus(get(fields, 'status'));
         bodyHtml = String(get(fields, 'bodyHtml') || '').trim();
         if (bodyHtml) {
           const firstImgMatch = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -218,6 +242,7 @@ const server = http.createServer(async (req, res) => {
         cardTitleColor = String(body.cardTitleColor ?? '#1d1d1f').trim() || '#1d1d1f';
         cardTitleFontWeight = String(body.cardTitleFontWeight ?? 'normal').trim() || 'normal';
         cardTitleFontStyle = String(body.cardTitleFontStyle ?? 'normal').trim() || 'normal';
+        status = normalizeStatus(body.status);
         bodyHtml = String(body.bodyHtml ?? '').trim();
         if (bodyHtml) {
           const firstImgMatch = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -229,7 +254,7 @@ const server = http.createServer(async (req, res) => {
 
       const articles = readArticles();
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-      const publishedAt = new Date().toISOString();
+      const nowIso = new Date().toISOString();
       const article = {
         id,
         title,
@@ -247,19 +272,26 @@ const server = http.createServer(async (req, res) => {
         cardTitleColor,
         cardTitleFontWeight,
         cardTitleFontStyle,
-        publishedAt,
+        status,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+        publishedAt: status === 'published' ? nowIso : null,
       };
       if (bodyHtml) article.bodyHtml = bodyHtml;
-      article.sortOrder = 0;
-      const bumped = articles.map((a) => {
-        const so = Number(a.sortOrder);
-        if (Number.isFinite(so)) return { ...a, sortOrder: so + 1 };
-        return a;
-      });
-      bumped.unshift(article);
-      writeArticles(bumped);
+      let next = articles.slice();
+      if (status === 'published') {
+        article.sortOrder = 0;
+        next = next.map((a) => {
+          if (normalizeStatus(a && a.status) !== 'published') return a;
+          const so = Number(a && a.sortOrder);
+          if (Number.isFinite(so)) return { ...a, sortOrder: so + 1 };
+          return a;
+        });
+      }
+      next.unshift(article);
+      writeArticles(next);
       res.writeHead(201);
-      res.end(JSON.stringify(articles[0]));
+      res.end(JSON.stringify(article));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
@@ -337,6 +369,7 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: 'Article not found' }));
         return;
       }
+      if (normalizeStatus(article.status) === 'draft' && !checkWriteAuth(req, res)) return;
       res.end(JSON.stringify(article));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -382,6 +415,7 @@ const server = http.createServer(async (req, res) => {
       const cardTitleColor = String(body.cardTitleColor ?? existing.cardTitleColor ?? '#1d1d1f').trim() || '#1d1d1f';
       const cardTitleFontWeight = String(body.cardTitleFontWeight ?? existing.cardTitleFontWeight ?? 'normal').trim() || 'normal';
       const cardTitleFontStyle = String(body.cardTitleFontStyle ?? existing.cardTitleFontStyle ?? 'normal').trim() || 'normal';
+      const status = normalizeStatus(body.status ?? existing.status);
       let bodyHtml = String(body.bodyHtml ?? existing.bodyHtml ?? '').trim();
       if (bodyHtml) {
         const firstImgMatch = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -406,7 +440,15 @@ const server = http.createServer(async (req, res) => {
         cardTitleColor,
         cardTitleFontWeight,
         cardTitleFontStyle,
+        status,
+        updatedAt: new Date().toISOString(),
       };
+      if (status === 'published') {
+        if (!updated.publishedAt) updated.publishedAt = new Date().toISOString();
+      } else {
+        updated.publishedAt = null;
+        delete updated.sortOrder;
+      }
       if (bodyHtml !== undefined) updated.bodyHtml = bodyHtml;
       articles[index] = updated;
       writeArticles(articles);

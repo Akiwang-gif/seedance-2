@@ -510,7 +510,10 @@
                     </div>
                 </fieldset>
 
-                <button type="submit" id="submitBtn">Publish Article</button>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <button type="button" id="saveDraftBtn" style="background:#6b7280;">Save Draft</button>
+                    <button type="submit" id="submitBtn">Publish Article</button>
+                </div>
                 <p class="msg" id="msg" role="status" aria-live="polite"></p>
             </form>
         </div>
@@ -538,6 +541,13 @@
                 <p class="toolbar-note">Drag by handle to reorder. Changes apply after you click Save order.</p>
             </div>
             <div id="list"></div>
+        </div>
+        <div class="list" style="margin-top:1.25rem;">
+            <div class="list-toolbar">
+                <h2>Draft Articles</h2>
+                <p class="toolbar-note">Drafts are private in CMS. Edit any draft and publish when ready.</p>
+            </div>
+            <div id="draftList"></div>
         </div>
     </div>
 
@@ -583,15 +593,20 @@
             var submitBtn = document.getElementById('submitBtn');
             var msg = document.getElementById('msg');
             var listEl = document.getElementById('list');
+            var draftListEl = document.getElementById('draftList');
             var formTitle = document.getElementById('formTitle');
             var formSub = document.getElementById('formSub');
             var cancelEditBtn = document.getElementById('cancelEditBtn');
+            var saveDraftBtn = document.getElementById('saveDraftBtn');
             var saveOrderBtn = document.getElementById('saveOrderBtn');
             var resetOrderBtn = document.getElementById('resetOrderBtn');
             var editingArticleId = null;
+            var editingArticleStatus = 'published';
             var orderedArticlesCache = [];
+            var draftArticlesCache = [];
             var draggedArticleId = null;
             var orderDirty = false;
+            var pendingSubmitStatus = 'published';
 
             var cmsGate = document.getElementById('cmsGate');
             var cmsMain = document.getElementById('cmsMain');
@@ -759,24 +774,73 @@
                 });
             }
 
+            function renderDraftList(drafts) {
+                if (!draftListEl) return;
+                if (!drafts.length) {
+                    draftListEl.innerHTML = '<p class="item-meta">No drafts yet.</p>';
+                    return;
+                }
+                draftListEl.innerHTML = drafts.map(function(a) {
+                    var updated = a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : '';
+                    return '<div class="item" data-id="' + (a.id || '') + '">' +
+                        '<div class="item-info">' +
+                        '<div class="item-title-row">' +
+                        '<span class="item-title">' + (a.title || '(Untitled draft)') + '</span>' +
+                        '<span class="order-badge">Draft</span>' +
+                        '</div>' +
+                        '<div class="item-meta">' + (a.category || '') + ' · ' + (a.author || '') + ' · updated ' + (updated || 'recently') + '</div>' +
+                        '</div>' +
+                        '<div class="item-actions">' +
+                        '<button type="button" class="btn-edit" data-id="' + (a.id || '') + '" aria-label="Edit">Edit</button> ' +
+                        '<button type="button" class="btn-del" data-id="' + (a.id || '') + '" aria-label="Delete">Delete</button>' +
+                        '</div></div>';
+                }).join('');
+
+                draftListEl.querySelectorAll('.btn-del').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var id = btn.getAttribute('data-id');
+                        if (!id || !confirm('Delete this draft?')) return;
+                        fetch(apiBase() + '/api/articles/' + id, { method: 'DELETE', headers: authHeaders() })
+                            .then(function(r) { return r.json(); })
+                            .then(function() { loadList(); })
+                            .catch(function() { showMessage('Failed to delete.', true); });
+                    });
+                });
+                draftListEl.querySelectorAll('.btn-edit').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var id = btn.getAttribute('data-id');
+                        if (!id) return;
+                        loadArticleForEdit(id);
+                    });
+                });
+            }
+
             function loadList() {
-                fetch(apiBase() + '/api/articles')
+                fetch(apiBase() + '/api/articles?scope=all', { headers: authHeaders() })
                     .then(function(r) { return r.json(); })
                     .then(function(articles) {
-                        if (!articles.length) {
-                            listEl.innerHTML = '<p class="item-meta">No articles yet. Publish one above.</p>';
+                        var published = (articles || []).filter(function(a) { return (a.status || 'published') === 'published'; });
+                        draftArticlesCache = (articles || []).filter(function(a) { return (a.status || 'published') === 'draft'; });
+
+                        if (!published.length) {
+                            listEl.innerHTML = '<p class="item-meta">No published articles yet.</p>';
                             orderedArticlesCache = [];
                             orderDirty = false;
                             updateOrderButtonsState();
-                            return;
+                        } else {
+                            orderedArticlesCache = published.slice().sort(compareArticles);
+                            orderDirty = false;
+                            updateOrderButtonsState();
+                            renderList(orderedArticlesCache);
                         }
-                        orderedArticlesCache = articles.slice().sort(compareArticles);
-                        orderDirty = false;
-                        updateOrderButtonsState();
-                        renderList(orderedArticlesCache);
+                        draftArticlesCache.sort(function(a, b) {
+                            return (new Date(b.updatedAt || b.createdAt || 0)) - (new Date(a.updatedAt || a.createdAt || 0));
+                        });
+                        renderDraftList(draftArticlesCache);
                     })
                     .catch(function() {
                         listEl.innerHTML = '<p class="msg error">Could not load articles. Is the CMS server running? (node server-cms.js)</p>';
+                        if (draftListEl) draftListEl.innerHTML = '<p class="msg error">Could not load drafts.</p>';
                     });
             }
 
@@ -814,16 +878,19 @@
                 editingArticleId = id;
                 formTitle.textContent = 'Edit Article';
                 if (formSub) formSub.style.display = 'block';
-                if (submitBtn) submitBtn.textContent = 'Update Article';
+                if (submitBtn) submitBtn.textContent = 'Update & Publish';
+                if (saveDraftBtn) saveDraftBtn.textContent = 'Update Draft';
             }
             function clearEditMode() {
                 editingArticleId = null;
+                editingArticleStatus = 'published';
                 formTitle.textContent = 'New Article';
                 if (formSub) formSub.style.display = 'none';
                 if (submitBtn) submitBtn.textContent = 'Publish Article';
+                if (saveDraftBtn) saveDraftBtn.textContent = 'Save Draft';
             }
             function loadArticleForEdit(id) {
-                fetch(apiBase() + '/api/articles/' + id)
+                fetch(apiBase() + '/api/articles/' + id, { headers: authHeaders() })
                     .then(function(r) {
                         if (!r.ok) throw new Error('Article not found');
                         return r.json();
@@ -840,6 +907,7 @@
                         var i = document.getElementById('cardTitleFontStyle');
                         if (w) w.checked = (a.cardTitleFontWeight === 'bold');
                         if (i) i.checked = (a.cardTitleFontStyle === 'italic');
+                        editingArticleStatus = (a.status === 'draft') ? 'draft' : 'published';
                         setEditMode(a.id);
                         updatePreview();
                         msg.textContent = '';
@@ -1235,11 +1303,26 @@
                 if (e.key === 'Escape' && document.getElementById('previewOverlay').classList.contains('show')) closeInnerPreview();
             });
 
+            if (saveDraftBtn) {
+                saveDraftBtn.addEventListener('click', function() {
+                    pendingSubmitStatus = 'draft';
+                    form.requestSubmit();
+                });
+            }
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function() {
+                    pendingSubmitStatus = 'published';
+                });
+            }
+
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 submitBtn.disabled = true;
+                if (saveDraftBtn) saveDraftBtn.disabled = true;
                 msg.textContent = '';
                 hideImageSizeBar();
+                var targetStatus = pendingSubmitStatus === 'draft' ? 'draft' : 'published';
+                pendingSubmitStatus = 'published';
                 var autoAltCount = optimizeEditorImageAlts();
                 var bodyHtml = articleBody.innerHTML.trim();
                 var cardFmt = getCardTitleFormat();
@@ -1252,7 +1335,8 @@
                     cardTitleFontSize: cardFmt.fontSize,
                     cardTitleColor: cardFmt.color,
                     cardTitleFontWeight: cardFmt.fontWeight,
-                    cardTitleFontStyle: cardFmt.fontStyle
+                    cardTitleFontStyle: cardFmt.fontStyle,
+                    status: targetStatus
                 };
                 if (bodyHtml) payload.bodyHtml = bodyHtml;
                 var url = apiBase() + '/api/articles';
@@ -1265,10 +1349,10 @@
                     .then(function(r) { if (!r.ok) throw new Error(r.statusText); return r.json(); })
                     .then(function() {
                         if (editingArticleId) {
-                            showMessage('Article updated.');
+                            showMessage(targetStatus === 'draft' ? 'Draft updated.' : 'Article updated and published.');
                             clearEditMode();
                         } else {
-                            showMessage('Article published.');
+                            showMessage(targetStatus === 'draft' ? 'Draft saved.' : 'Article published.');
                         }
                         if (autoAltCount > 0) {
                             showMessage('Auto-optimized alt text for ' + autoAltCount + ' image(s).');
@@ -1286,8 +1370,14 @@
                         updatePreview();
                         loadList();
                     })
-                    .catch(function(err) { showMessage((editingArticleId ? 'Failed to update: ' : 'Failed to publish: ') + (err.message || 'Unknown error'), true); })
-                    .finally(function() { submitBtn.disabled = false; });
+                    .catch(function(err) {
+                        var actionText = (targetStatus === 'draft') ? 'save draft' : (editingArticleId ? 'update article' : 'publish article');
+                        showMessage('Failed to ' + actionText + ': ' + (err.message || 'Unknown error'), true);
+                    })
+                    .finally(function() {
+                        submitBtn.disabled = false;
+                        if (saveDraftBtn) saveDraftBtn.disabled = false;
+                    });
             });
 
             if (gateBtn && gateKey) {

@@ -88,6 +88,7 @@ function getStore() {
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 const { requireWriteAuth } = require('./_lib/cms-auth');
+const { URL } = require('url');
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
@@ -216,6 +217,24 @@ async function setArticles(articles) {
   await store.set('cms_articles', articles);
 }
 
+function normalizeStatus(value) {
+  const v = String(value || '').trim().toLowerCase();
+  return v === 'draft' ? 'draft' : 'published';
+}
+
+function sortPublishedForPublic(articles) {
+  return articles
+    .filter((a) => normalizeStatus(a && a.status) === 'published')
+    .sort((a, b) => {
+      const aHasOrder = Number.isFinite(Number(a && a.sortOrder));
+      const bHasOrder = Number.isFinite(Number(b && b.sortOrder));
+      if (aHasOrder && bHasOrder) return Number(a.sortOrder) - Number(b.sortOrder);
+      if (aHasOrder) return -1;
+      if (bHasOrder) return 1;
+      return new Date(b && b.publishedAt || 0) - new Date(a && a.publishedAt || 0);
+    });
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -225,13 +244,23 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
+    const reqUrl = new URL(req.url || '/api/articles', 'http://localhost');
+    const scope = String(reqUrl.searchParams.get('scope') || '').trim().toLowerCase();
+    const includeAll = scope === 'all';
+    if (includeAll && !requireWriteAuth(req, res)) return;
+
     const store = getStore();
     const articles = await getArticles();
+    const normalized = articles.map((a) => ({
+      ...a,
+      status: normalizeStatus(a && a.status),
+    }));
+    const visible = includeAll ? normalized : sortPublishedForPublic(normalized);
     res.setHeader('X-Store', storeType || 'none');
-    res.setHeader('X-Articles-Count', String(articles.length));
+    res.setHeader('X-Articles-Count', String(visible.length));
     res.setHeader('Access-Control-Expose-Headers', 'X-Store, X-Articles-Count');
     res.writeHead(200, CORS);
-    res.end(JSON.stringify(articles));
+    res.end(JSON.stringify(visible));
     return;
   }
 
@@ -313,23 +342,33 @@ module.exports = async (req, res) => {
       }
       const articles = await getArticles();
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-      const publishedAt = new Date().toISOString();
+      const status = normalizeStatus(body.status);
+      const nowIso = new Date().toISOString();
+      const publishedAt = status === 'published' ? nowIso : null;
       const article = {
         id, title, description, category, imageUrl, author,
         fontFamily, fontSize, color, fontWeight, fontStyle,
         cardTitleFontFamily, cardTitleFontSize, cardTitleColor, cardTitleFontWeight, cardTitleFontStyle,
+        status,
+        createdAt: nowIso,
+        updatedAt: nowIso,
         publishedAt,
-        sortOrder: 0,
       };
       if (bodyHtml) article.bodyHtml = bodyHtml;
-      // 新稿固定置顶：与前台 compareArticles（有 sortOrder 的优先）一致，需把旧文的 sortOrder 全部 +1
-      const bumped = articles.map((a) => {
-        const so = Number(a.sortOrder);
-        if (Number.isFinite(so)) return { ...a, sortOrder: so + 1 };
-        return a;
-      });
-      bumped.unshift(article);
-      await setArticles(bumped);
+
+      let next = articles.slice();
+      if (status === 'published') {
+        article.sortOrder = 0;
+        // 新发布稿置顶：旧已发布 sortOrder 顺延，草稿不参与顺延。
+        next = next.map((a) => {
+          if (normalizeStatus(a && a.status) !== 'published') return a;
+          const so = Number(a && a.sortOrder);
+          if (Number.isFinite(so)) return { ...a, sortOrder: so + 1 };
+          return a;
+        });
+      }
+      next.unshift(article);
+      await setArticles(next);
       res.writeHead(201, CORS);
       res.end(JSON.stringify(article));
     } catch (e) {
