@@ -7,6 +7,8 @@ Allow: /api/articles/
 
 # Keep admin and other API endpoints out of search index.
 Disallow: /admin.html
+# 比 /api/ 更具体，Google 会允许抓取站点地图接口（旧版 GSC 若仍提交 /api/sitemap 也能通过）
+Allow: /api/sitemap
 Disallow: /api/
 
 # Sitemap on /sitemap.xml (rewrites to API; not under /api/ so crawlers are not blocked by Disallow: /api/)
