@@ -13,6 +13,6 @@
   ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/article/:id", "destination": "/article.html?id=:id" }
+    { "source": "/article/:id", "destination": "/api/article-page?id=:id" }
   ]
 }

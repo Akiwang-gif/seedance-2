@@ -564,6 +564,7 @@
     <script src="/article-likes.js"></script>
     <script>
     (function() {
+        var bootstrap = window.__ARTICLE_BOOTSTRAP__ || null;
         var params = new URLSearchParams(window.location.search);
         var id = (params.get('id') || '').trim();
         if (!id) {
@@ -894,6 +895,10 @@
 
         if (!id) {
             showNotFound();
+        } else if (bootstrap && bootstrap.article && String(bootstrap.article.id || '') === id) {
+            var bootSorted = Array.isArray(bootstrap.all) ? bootstrap.all : [bootstrap.article];
+            var bootIndex = bootSorted.findIndex(function(a) { return a && a.id === id; });
+            render(bootstrap.article, bootSorted, bootIndex >= 0 ? bootIndex : 0);
         } else {
             function hasCustomOrder(article) {
                 return Number.isFinite(Number(article && article.sortOrder));
