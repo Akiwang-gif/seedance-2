@@ -273,6 +273,7 @@ const server = http.createServer(async (req, res) => {
         cardTitleFontWeight,
         cardTitleFontStyle,
         status,
+        likeCount: 0,
         createdAt: nowIso,
         updatedAt: nowIso,
         publishedAt: status === 'published' ? nowIso : null,
@@ -423,8 +424,15 @@ const server = http.createServer(async (req, res) => {
           imageUrl = firstImgMatch[1];
         }
       }
+      const existingLikes = Math.max(0, parseInt(existing.likeCount, 10) || 0);
+      let likeCount = existingLikes;
+      if (body.likeCount !== undefined && body.likeCount !== null && body.likeCount !== '') {
+        const n = parseInt(body.likeCount, 10);
+        if (Number.isFinite(n) && n >= 0) likeCount = n;
+      }
       const updated = {
         ...existing,
+        likeCount,
         title,
         description,
         category,
@@ -474,6 +482,59 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(500);
       res.end(JSON.stringify({ error: e.message }));
     }
+    return;
+  }
+
+  // API: POST /api/article-like — public like increment
+  if (/^\/api\/article-like\/?$/.test(pathname)) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204).end();
+      return;
+    }
+    if (req.method !== 'POST') {
+      res.writeHead(405, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify({ error: 'Method not allowed' }));
+      return;
+    }
+    const contentType = (req.headers['content-type'] || '').toLowerCase();
+    if (!contentType.includes('application/json')) {
+      res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify({ error: 'Content-Type must be application/json' }));
+      return;
+    }
+    parseBody(req)
+      .then((body) => {
+        const id = String(body.id || '').trim();
+        if (!id) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: 'id is required' }));
+          return;
+        }
+        const articles = readArticles();
+        const index = articles.findIndex((a) => a.id === id);
+        if (index === -1) {
+          res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: 'Article not found' }));
+          return;
+        }
+        if (normalizeStatus(articles[index].status) !== 'published') {
+          res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: 'Article is not published' }));
+          return;
+        }
+        const prev = Math.max(0, parseInt(articles[index].likeCount, 10) || 0);
+        const likeCount = prev + 1;
+        articles[index] = { ...articles[index], likeCount };
+        writeArticles(articles);
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true, id, likeCount }));
+      })
+      .catch((e) => {
+        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ error: e.message }));
+      });
     return;
   }
 
@@ -542,5 +603,5 @@ server.listen(PORT, () => {
   console.log('  Homepage:  http://localhost:' + PORT + '/');
   console.log('  Admin:     http://localhost:' + PORT + '/admin.html');
   console.log('  Articles:  http://localhost:' + PORT + '/article/<id>  (pretty URL → article.html)');
-  console.log('  API:       GET/POST/PUT/DELETE /api/articles, GET/PUT /api/articles/:id, POST /api/upload-image');
+  console.log('  API:       GET/POST/PUT/DELETE /api/articles, GET/PUT /api/articles/:id, POST /api/upload-image, POST /api/article-like');
 });

@@ -436,6 +436,8 @@
                 </select>
                 <label for="author">Author</label>
                 <input type="text" id="author" name="author" placeholder="Author name">
+                <label for="likeCount">Total likes</label>
+                <input type="number" id="likeCount" name="likeCount" min="0" step="1" value="0" title="Count shown next to Like on the site; visitors add +1 per browser. You can adjust the total here.">
 
                 <label>Article body</label>
                 <p class="sublabel" style="margin-bottom:0.5rem;">Edit directly below. The first image in the content will be used as the cover on the homepage.</p>
@@ -905,6 +907,11 @@
                         document.getElementById('title').value = a.title || '';
                         document.getElementById('category').value = a.category || 'News';
                         document.getElementById('author').value = a.author || '';
+                        var likeEl = document.getElementById('likeCount');
+                        if (likeEl) {
+                            var n = parseInt(a.likeCount, 10);
+                            likeEl.value = Number.isFinite(n) && n >= 0 ? String(n) : '0';
+                        }
                         articleBody.innerHTML = (a.bodyHtml || '').trim() || '';
                         document.getElementById('cardTitleFontFamily').value = a.cardTitleFontFamily || 'Inter';
                         document.getElementById('cardTitleFontSize').value = a.cardTitleFontSize || '16px';
@@ -1345,6 +1352,9 @@
                     status: targetStatus
                 };
                 if (bodyHtml) payload.bodyHtml = bodyHtml;
+                var likeEl = document.getElementById('likeCount');
+                var likeRaw = likeEl ? parseInt(likeEl.value, 10) : 0;
+                payload.likeCount = Number.isFinite(likeRaw) && likeRaw >= 0 ? likeRaw : 0;
                 var url = apiBase() + '/api/articles';
                 var method = 'POST';
                 if (editingArticleId) {

@@ -174,8 +174,15 @@ module.exports = async (req, res) => {
       }
       const existing = articles[index];
       const status = normalizeStatus(body.status ?? existing.status);
+      const existingLikes = Math.max(0, parseInt(existing.likeCount, 10) || 0);
+      let likeCount = existingLikes;
+      if (body.likeCount !== undefined && body.likeCount !== null && body.likeCount !== '') {
+        const n = parseInt(body.likeCount, 10);
+        if (Number.isFinite(n) && n >= 0) likeCount = n;
+      }
       const updated = {
         ...existing,
+        likeCount,
         title: String(body.title ?? existing.title ?? '').trim(),
         description: String(body.description ?? existing.description ?? '').trim(),
         category: String(body.category ?? existing.category ?? 'News').trim() || 'News',

@@ -396,6 +396,33 @@
             color: var(--text-muted);
             margin: 0;
         }
+        .article-like-slot { margin-top: 0.5rem; }
+        .article-like-slot--footer { margin-top: 1.75rem; margin-bottom: 0.25rem; }
+        .article-like-wrap { display: inline-flex; align-items: center; max-width: 100%; }
+        .article-like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.85rem;
+            border: 1px solid rgba(17, 24, 39, 0.12);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.95);
+            font: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+        .article-like-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .article-like-btn:disabled { opacity: 0.7; cursor: wait; }
+        .article-like-icon { font-size: 1.05rem; line-height: 1; color: #cbd5e1; transition: color 0.15s; }
+        .article-like-wrap.is-liked .article-like-icon { color: var(--accent); }
+        .article-like-count { font-variant-numeric: tabular-nums; min-width: 1ch; color: var(--text); }
+        .article-like-label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; }
         .related-card.is-empty { display: none; }
         @media (max-width: 900px) {
             .article-related-grid { grid-template-columns: 1fr; }
@@ -448,6 +475,7 @@
             <h1 class="article-title" id="articleTitle"></h1>
             <p class="article-meta" id="articleMeta"></p>
             <div class="article-body" id="articleBody"></div>
+            <div class="article-like-slot article-like-slot--footer" id="articleLikeSlot" style="display:none;"></div>
             <nav class="article-nav" aria-label="Previous and next articles">
                 <a href="#" id="prevLink" class="prev" title="Previous article on Seedance-2">
                     <span class="nav-label">Previous</span>
@@ -514,6 +542,7 @@
         </div>
     </footer>
 
+    <script src="/article-likes.js"></script>
     <script>
     (function() {
         var params = new URLSearchParams(window.location.search);
@@ -547,6 +576,8 @@
             document.getElementById('articleContent').style.display = 'none';
             var rel = document.getElementById('articleRelated');
             if (rel) rel.style.display = 'none';
+            var likeSlot = document.getElementById('articleLikeSlot');
+            if (likeSlot) likeSlot.style.display = 'none';
         }
 
         function escapeAttr(text) {
@@ -694,6 +725,14 @@
                 bodyEl.textContent = article.description || '';
             }
 
+            var likeSlot = document.getElementById('articleLikeSlot');
+            if (likeSlot) {
+                likeSlot.style.display = '';
+                if (window.SeedanceArticleLikes) {
+                    window.SeedanceArticleLikes.mount(likeSlot, article.id, article.likeCount);
+                }
+            }
+
             var prevLink = document.getElementById('prevLink');
             var nextLink = document.getElementById('nextLink');
             var prevTitle = document.getElementById('prevTitle');
@@ -767,7 +806,20 @@
             el.classList.remove('is-empty');
             el.style.cursor = 'pointer';
             el.setAttribute('data-article-id', a.id || '');
+            var bodyEl = el.querySelector('.card-body');
+            if (bodyEl) {
+                var slot = bodyEl.querySelector('.article-like-slot');
+                if (!slot) {
+                    slot = document.createElement('div');
+                    slot.className = 'article-like-slot';
+                    bodyEl.appendChild(slot);
+                }
+                if (window.SeedanceArticleLikes) {
+                    window.SeedanceArticleLikes.mount(slot, a.id, a.likeCount);
+                }
+            }
             el.onclick = function(e) {
+                if (e.target.closest && e.target.closest('.article-like-wrap')) return;
                 if (e.target.closest('a')) return;
                 window.location.href = url;
             };

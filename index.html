@@ -609,6 +609,33 @@
             justify-content: space-between;
         }
 
+        .article-like-slot { margin-top: 0.65rem; }
+        .article-like-wrap { display: inline-flex; align-items: center; max-width: 100%; }
+        .article-like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.65rem;
+            border: 1px solid rgba(17, 24, 39, 0.12);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.9);
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+        .article-like-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .article-like-btn:disabled { opacity: 0.7; cursor: wait; }
+        .article-like-icon { font-size: 0.95rem; line-height: 1; color: #cbd5e1; transition: color 0.15s; }
+        .article-like-wrap.is-liked .article-like-icon { color: var(--accent); }
+        .article-like-count { font-variant-numeric: tabular-nums; min-width: 1ch; color: var(--text); }
+        .article-like-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.02em; }
+
         /* ========== Footer ========== */
         .site-footer {
             background: #fafafa;
@@ -838,6 +865,7 @@
         </div>
     </footer>
 
+    <script src="/article-likes.js"></script>
     <script>
     (function() {
         function timeAgo(iso) {
@@ -887,9 +915,20 @@
             }
             el.setAttribute('data-article-id', article.id);
             el.style.cursor = 'pointer';
-            el.addEventListener('click', function() {
+            el.addEventListener('click', function(ev) {
+                if (ev.target.closest && ev.target.closest('.article-like-wrap')) return;
                 window.location.href = '/article/' + encodeURIComponent(article.id);
             });
+            var cardBody = el.querySelector('.card-body');
+            if (cardBody && window.SeedanceArticleLikes) {
+                var likeSlot = cardBody.querySelector('.article-like-slot');
+                if (!likeSlot) {
+                    likeSlot = document.createElement('div');
+                    likeSlot.className = 'article-like-slot';
+                    cardBody.appendChild(likeSlot);
+                }
+                window.SeedanceArticleLikes.mount(likeSlot, article.id, article.likeCount);
+            }
             el.classList.add('filled');
         }
         var tickerEl = document.getElementById('breakingNewsTicker');

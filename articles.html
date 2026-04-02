@@ -356,6 +356,32 @@
             font-size: 0.85rem;
             color: var(--text-muted);
         }
+        .article-like-slot { margin-top: 0.35rem; }
+        .article-like-wrap { display: inline-flex; align-items: center; max-width: 100%; }
+        .article-like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.65rem;
+            border: 1px solid rgba(17, 24, 39, 0.12);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.95);
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+        .article-like-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .article-like-btn:disabled { opacity: 0.7; cursor: wait; }
+        .article-like-icon { font-size: 0.95rem; line-height: 1; color: #cbd5e1; transition: color 0.15s; }
+        .article-like-wrap.is-liked .article-like-icon { color: var(--accent); }
+        .article-like-count { font-variant-numeric: tabular-nums; min-width: 1ch; color: var(--text); }
+        .article-like-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.02em; }
 
         .empty {
             padding: 2.25rem;
@@ -550,6 +576,7 @@
         </div>
     </footer>
 
+    <script src="/article-likes.js"></script>
     <script>
     (function() {
         var PAGE_SIZE = 10;
@@ -642,11 +669,17 @@
                     '<h2 class="title">' + (article.title || 'Untitled article') + '</h2>' +
                     '<p class="meta">By ' + (article.author || 'Unknown') + '</p>' +
                     '<p class="meta">' + timeAgo(article.publishedAt) + '</p>' +
+                    '<div class="article-like-slot"></div>' +
                     '</div>';
 
-                card.addEventListener('click', function() {
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest && e.target.closest('.article-like-wrap')) return;
                     window.location.href = '/article/' + encodeURIComponent(article.id);
                 });
+                var likeSlot = card.querySelector('.article-like-slot');
+                if (likeSlot && window.SeedanceArticleLikes) {
+                    window.SeedanceArticleLikes.mount(likeSlot, article.id, article.likeCount);
+                }
                 gridEl.appendChild(card);
             });
         }

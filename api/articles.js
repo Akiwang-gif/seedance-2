@@ -350,6 +350,7 @@ module.exports = async (req, res) => {
         fontFamily, fontSize, color, fontWeight, fontStyle,
         cardTitleFontFamily, cardTitleFontSize, cardTitleColor, cardTitleFontWeight, cardTitleFontStyle,
         status,
+        likeCount: 0,
         createdAt: nowIso,
         updatedAt: nowIso,
         publishedAt,
