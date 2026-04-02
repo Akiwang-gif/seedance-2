@@ -84,6 +84,11 @@ function lastmodIso(value) {
   return t.toISOString();
 }
 
+function normalizeStatus(value) {
+  const v = String(value || '').trim().toLowerCase();
+  return v === 'draft' ? 'draft' : 'published';
+}
+
 async function getArticles() {
   const store = getStore();
   if (!store) return [];
@@ -116,7 +121,7 @@ function buildSitemapXml(base, staticUrls, articles) {
   }).join('\n');
 
   const articleXml = (Array.isArray(articles) ? articles : [])
-    .filter((a) => a && a.id)
+    .filter((a) => a && a.id && normalizeStatus(a.status) === 'published')
     .map((a) => {
       let loc = null;
       try {

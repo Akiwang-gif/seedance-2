@@ -181,6 +181,7 @@ module.exports = async (req, res) => {
 
   html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>' + escAttr(pageTitle) + '</title>');
   html = html.replace(/(<meta\s+name="description"\s+content=")([^"]*)(")/i, '$1' + escAttr(description) + '$3');
+  html = html.replace(/(<meta\s+name="robots"\s+content=")([^"]*)(")/i, '$1' + (article ? 'index, follow' : 'noindex, follow') + '$3');
   html = html.replace(/(<link[^>]*id="canonicalLink"[^>]*href=")([^"]*)(")/i, '$1' + escAttr(canonicalUrl) + '$3');
   html = html.replace(/(<link[^>]*id="altEn"[^>]*href=")([^"]*)(")/i, '$1' + escAttr(canonicalUrl) + '$3');
   html = html.replace(/(<link[^>]*id="altDefault"[^>]*href=")([^"]*)(")/i, '$1' + escAttr(canonicalUrl) + '$3');
