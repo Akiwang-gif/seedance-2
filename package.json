@@ -6,7 +6,8 @@
   "scripts": {
     "build": "echo Static + API",
     "start": "node server-cms.js",
-    "cms": "node server-cms.js"
+    "cms": "node server-cms.js",
+    "setup:hooks": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@vercel/blob": "^0.24.0",
