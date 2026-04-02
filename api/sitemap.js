@@ -100,6 +100,53 @@ async function getArticles() {
   }
 }
 
+function buildSitemapXml(base, staticUrls, articles) {
+  const safeBase = String(base || 'https://www.seedance-2.info');
+  const staticXml = (Array.isArray(staticUrls) ? staticUrls : []).map((u) => {
+    const path = String((u && u.path) || '/');
+    const changefreq = String((u && u.changefreq) || 'weekly');
+    const priority = String((u && u.priority) || '0.5');
+    return [
+      '  <url>',
+      '    <loc>' + xmlEscape(safeBase + path) + '</loc>',
+      '    <changefreq>' + xmlEscape(changefreq) + '</changefreq>',
+      '    <priority>' + xmlEscape(priority) + '</priority>',
+      '  </url>',
+    ].join('\n');
+  }).join('\n');
+
+  const articleXml = (Array.isArray(articles) ? articles : [])
+    .filter((a) => a && a.id)
+    .map((a) => {
+      let loc = null;
+      try {
+        loc = safeBase + '/article/' + encodeURIComponent(String(a.id));
+      } catch (_) {
+        return '';
+      }
+      const lm = lastmodIso(a.publishedAt || a.updatedAt || null);
+      return [
+        '  <url>',
+        '    <loc>' + xmlEscape(loc) + '</loc>',
+        lm ? '    <lastmod>' + xmlEscape(lm) + '</lastmod>' : '',
+        '    <changefreq>weekly</changefreq>',
+        '    <priority>0.8</priority>',
+        '  </url>',
+      ].filter(Boolean).join('\n');
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    staticXml,
+    articleXml,
+    '</urlset>',
+    '',
+  ].join('\n');
+}
+
 module.exports = async (req, res) => {
   const base = 'https://www.seedance-2.info';
   const staticUrls = [
@@ -113,49 +160,19 @@ module.exports = async (req, res) => {
     { path: '/terms-of-service.html', changefreq: 'yearly', priority: '0.4' },
   ];
 
-  const articles = await getArticles();
-  const articleUrls = articles
-    .filter((a) => a && a.id)
-    .map((a) => ({
-      loc: base + '/article/' + encodeURIComponent(String(a.id)),
-      lastmod: a.publishedAt || null,
-      changefreq: 'weekly',
-      priority: '0.8',
-    }));
-
-  const staticXml = staticUrls.map((u) => {
-    return [
-      '  <url>',
-      '    <loc>' + xmlEscape(base + u.path) + '</loc>',
-      '    <changefreq>' + u.changefreq + '</changefreq>',
-      '    <priority>' + u.priority + '</priority>',
-      '  </url>',
-    ].join('\n');
-  }).join('\n');
-
-  const articleXml = articleUrls.map((u) => {
-    const lm = lastmodIso(u.lastmod);
-    return [
-      '  <url>',
-      '    <loc>' + xmlEscape(u.loc) + '</loc>',
-      lm ? '    <lastmod>' + xmlEscape(lm) + '</lastmod>' : '',
-      '    <changefreq>' + u.changefreq + '</changefreq>',
-      '    <priority>' + u.priority + '</priority>',
-      '  </url>',
-    ].filter(Boolean).join('\n');
-  }).join('\n');
-
-  const xml = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    staticXml,
-    articleXml,
-    '</urlset>',
-    '',
-  ].join('\n');
-
-  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
-  res.writeHead(200);
-  res.end(xml);
+  try {
+    const articles = await getArticles();
+    const xml = buildSitemapXml(base, staticUrls, articles);
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
+    res.writeHead(200);
+    res.end(xml);
+  } catch (e) {
+    // Never return 500 for sitemap; fallback to static URLs for crawler stability.
+    const fallbackXml = buildSitemapXml(base, staticUrls, []);
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    res.writeHead(200);
+    res.end(fallbackXml);
+  }
 };
