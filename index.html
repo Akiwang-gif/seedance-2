@@ -625,10 +625,14 @@
             justify-content: space-between;
         }
 
+        /* Full-width row so the pill aligns to the right (stretch was keeping button left) */
         .card-body .article-like-slot {
             margin-top: auto;
-            align-self: flex-end;
             padding-top: 0.65rem;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            box-sizing: border-box;
         }
         .article-like-wrap { display: inline-flex; align-items: center; max-width: 100%; }
         .article-like-btn {
