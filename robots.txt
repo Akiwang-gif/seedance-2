@@ -4,11 +4,10 @@ Allow: /
 # Article list JSON is fetched by article.html when rendering /article/:id — allow crawlers to load it.
 Allow: /api/articles
 Allow: /api/articles/
-Allow: /api/sitemap
 
 # Keep admin and other API endpoints out of search index.
 Disallow: /admin.html
 Disallow: /api/
 
-# Stable sitemap endpoint for Search Console and crawlers.
-Sitemap: https://www.seedance-2.info/api/sitemap
+# Sitemap on /sitemap.xml (rewrites to API; not under /api/ so crawlers are not blocked by Disallow: /api/)
+Sitemap: https://www.seedance-2.info/sitemap.xml

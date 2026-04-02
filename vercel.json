@@ -5,11 +5,6 @@
   "installCommand": "npm install",
   "redirects": [
     {
-      "source": "/sitemap.xml",
-      "destination": "/api/sitemap",
-      "permanent": false
-    },
-    {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "seedance-2.info" }],
       "destination": "https://www.seedance-2.info/$1",
@@ -17,6 +12,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/article/:id", "destination": "/api/article-page?id=:id" }
   ]
 }
