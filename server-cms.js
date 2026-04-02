@@ -484,6 +484,21 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Pretty URL: /article/:id → article.html (same as vercel.json rewrites)
+  if (req.method === 'GET' && /^\/article\/[^/]+\/?$/.test(pathname)) {
+    const articleHtmlPath = path.join(__dirname, 'article.html');
+    fs.readFile(articleHtmlPath, (err, data) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Server error');
+        return;
+      }
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.end(data);
+    });
+    return;
+  }
+
   // Static files: serve from project root (strip leading / for path.join)
   const safePath = (p.split('?')[0] || '/').replace(/^\/+/, '') || 'index.html';
   const filePath = path.join(__dirname, safePath);
@@ -526,5 +541,6 @@ server.listen(PORT, () => {
   console.log('  Run from:  ' + __dirname);
   console.log('  Homepage:  http://localhost:' + PORT + '/');
   console.log('  Admin:     http://localhost:' + PORT + '/admin.html');
+  console.log('  Articles:  http://localhost:' + PORT + '/article/<id>  (pretty URL → article.html)');
   console.log('  API:       GET/POST/PUT/DELETE /api/articles, GET/PUT /api/articles/:id, POST /api/upload-image');
 });
