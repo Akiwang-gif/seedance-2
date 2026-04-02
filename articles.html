@@ -328,6 +328,7 @@
             overflow: hidden;
             display: grid;
             grid-template-columns: 220px 1fr;
+            align-items: stretch;
             cursor: pointer;
         }
         .article-card .card-media {
@@ -344,8 +345,9 @@
             padding: 1rem 1.1rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 0.45rem;
+            min-height: 0;
         }
         .article-card .title {
             font-size: 1.02rem;
@@ -356,7 +358,11 @@
             font-size: 0.85rem;
             color: var(--text-muted);
         }
-        .article-like-slot { margin-top: 0.35rem; }
+        .article-card .card-body .article-like-slot {
+            margin-top: auto;
+            align-self: flex-end;
+            padding-top: 0.35rem;
+        }
         .article-like-wrap { display: inline-flex; align-items: center; max-width: 100%; }
         .article-like-btn {
             display: inline-flex;

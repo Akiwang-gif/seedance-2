@@ -374,6 +374,8 @@
             box-shadow: var(--shadow);
             overflow: hidden;
             transition: transform 220ms ease, box-shadow 220ms ease;
+            display: flex;
+            flex-direction: column;
         }
         .featured-card:hover {
             transform: translateY(-4px);
@@ -385,6 +387,10 @@
         }
         .featured-card .card-body {
             padding: 1.5rem 1.5rem 1.75rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
         .featured-card .category {
             display: inline-block;
@@ -432,7 +438,9 @@
             padding: 1.1rem 1.15rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
+            flex: 1;
+            min-height: 0;
         }
         .side-card .category {
             display: inline-block;
@@ -578,6 +586,8 @@
             box-shadow: var(--shadow);
             overflow: hidden;
             transition: transform 220ms ease, box-shadow 220ms ease;
+            display: flex;
+            flex-direction: column;
         }
         .latest-card:hover {
             transform: translateY(-4px);
@@ -587,7 +597,13 @@
             aspect-ratio: 16/10;
             background: #f0f0f0;
         }
-        .latest-card .card-body { padding: 1.15rem 1.2rem; }
+        .latest-card .card-body {
+            padding: 1.15rem 1.2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
         .latest-card .category {
             display: inline-block;
             background: #e8e8e8;
@@ -609,7 +625,11 @@
             justify-content: space-between;
         }
 
-        .article-like-slot { margin-top: 0.65rem; }
+        .card-body .article-like-slot {
+            margin-top: auto;
+            align-self: flex-end;
+            padding-top: 0.65rem;
+        }
         .article-like-wrap { display: inline-flex; align-items: center; max-width: 100%; }
         .article-like-btn {
             display: inline-flex;
