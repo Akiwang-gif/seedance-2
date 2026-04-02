@@ -1,0 +1,34 @@
+# 推送到 main 后触发部署。
+#
+# 推荐（无需本 workflow）：在 Vercel 项目 Settings → Git 中已连接本仓库时，
+# 每次 git push 到生产分支会自动部署，不必配置下方 Secret。
+#
+# 若未使用 Vercel 的 Git 集成，可在 Vercel → Settings → Git → Deploy Hooks
+# 创建 Production Hook，将完整 URL 存入仓库 Secret：VERCEL_DEPLOY_HOOK
+# （勿提交到代码库）。设置后本 workflow 会在每次 push 到 main 时 POST 该 Hook。
+
+name: Deploy (Vercel)
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  trigger-vercel-hook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK" ]; then
+            echo "VERCEL_DEPLOY_HOOK 未配置：跳过。若已在 Vercel 连接 GitHub，推送仍会由 Vercel 自动构建。"
+            exit 0
+          fi
+          curl -fsS -X POST "$VERCEL_DEPLOY_HOOK"
+          echo "已触发 Vercel Deploy Hook。"

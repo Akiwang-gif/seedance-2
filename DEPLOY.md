@@ -17,6 +17,12 @@
    `https://seedance-2-xxx.vercel.app`  
    首页、文章、后台均可使用；后台上传的图片会存到 Blob 并显示完整 URL。
 
+### 每次改完代码如何自动部署？
+
+**推荐做法（无需额外配置）**：在 Vercel 项目 **Settings** → **Git** 中确认已连接 GitHub 仓库 **Akiwang-gif/seedance-2**，且 **Production Branch** 为 `main`。之后每次在本地执行 `git push origin main`（或合并 PR 到 `main`），Vercel 会自动拉取最新提交并部署，无需手动点 Redeploy。
+
+**可选**：若因故未使用 Vercel 的 Git 集成，可在 Vercel → **Settings** → **Git** → **Deploy Hooks** 创建指向 `main` 的 Production Hook，把 Hook 的 URL 加到 GitHub 仓库 **Settings** → **Secrets and variables** → **Actions**，名称设为 `VERCEL_DEPLOY_HOOK`。推送 `main` 时，仓库里的 workflow `.github/workflows/deploy-vercel.yml` 会请求该 Hook 触发部署。**注意**：若同时开启 Vercel Git 集成与本 Hook，一次推送可能触发两次构建，一般只保留其中一种即可。
+
 ### 首页没有显示后台上传的文章？
 
 **原因**：文章数据存在 **Vercel KV** 里，若未创建并绑定 KV，接口会返回空列表，首页就一直是占位内容。

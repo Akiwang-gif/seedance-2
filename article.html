@@ -273,9 +273,15 @@
             color: var(--text);
             margin-bottom: 0.75rem;
         }
-        .footer-col ul { list-style: none; padding: 0; margin: 0; }
-        .footer-col li { margin-bottom: 0.4rem; }
-        .footer-col a {
+        .footer-col ul.footer-about-links { list-style: none; padding: 0; margin: 0; }
+        .footer-col .footer-link-heading {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin: 0 0 0.4rem 0;
+            line-height: 1.4;
+        }
+        .footer-col .footer-about-links li:last-child .footer-link-heading { margin-bottom: 0; }
+        .footer-col .footer-link-heading a {
             text-decoration: none;
             font-size: 0.95rem;
             font-weight: 500;
@@ -287,7 +293,7 @@
             filter: drop-shadow(0 1px 1px rgba(71, 85, 105, 0.12));
             transition: filter 180ms ease, background 180ms ease;
         }
-        .footer-col a:hover {
+        .footer-col .footer-link-heading a:hover {
             background: linear-gradient(92deg, #1e293b 0%, #334155 50%, #c0392b 100%);
             -webkit-background-clip: text;
             background-clip: text;
@@ -496,10 +502,10 @@
             </div>
             <div class="footer-col">
                 <h2>About</h2>
-                <ul>
-                    <li><a href="/about-us.html" title="About Seedance-2 — editorial mission and site information">About Us</a></li>
-                    <li><a href="/privacy-policy.html" title="Privacy policy — how Seedance-2 handles your data">Privacy Policy</a></li>
-                    <li><a href="/terms-of-service.html" title="Terms of service — rules for using Seedance-2">Terms of Service</a></li>
+                <ul class="footer-about-links">
+                    <li><h3 class="footer-link-heading"><a href="/about-us.html" title="About Seedance-2 — editorial mission and site information">About Us</a></h3></li>
+                    <li><h3 class="footer-link-heading"><a href="/privacy-policy.html" title="Privacy policy — how Seedance-2 handles your data">Privacy Policy</a></h3></li>
+                    <li><h3 class="footer-link-heading"><a href="/terms-of-service.html" title="Terms of service — rules for using Seedance-2">Terms of Service</a></h3></li>
                 </ul>
             </div>
         </div>
