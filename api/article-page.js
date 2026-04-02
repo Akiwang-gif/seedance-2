@@ -112,6 +112,40 @@ function escAttr(text) {
     .replace(/>/g, '&gt;');
 }
 
+function stripTags(html) {
+  return String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function truncateText(text, maxLen) {
+  const s = String(text || '').trim();
+  if (!s || s.length <= maxLen) return s;
+  const cut = s.slice(0, maxLen - 1);
+  const lastSpace = cut.lastIndexOf(' ');
+  return (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim() + '…';
+}
+
+function buildDescription(article) {
+  const explicit = truncateText(article && article.description, 160);
+  if (explicit) return explicit;
+  const fromBody = truncateText(stripTags(article && article.bodyHtml), 160);
+  if (fromBody) return fromBody;
+  const fromTitle = truncateText((article && article.title ? String(article.title) + ' - ' : '') + 'AI video news and analysis from Seedance-2.', 160);
+  return fromTitle || 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis.';
+}
+
+function toAbsoluteUrl(base, urlLike) {
+  const s = String(urlLike || '').trim();
+  if (!s) return '';
+  if (/^https?:\/\//i.test(s)) return s;
+  if (s.startsWith('/')) return base + s;
+  return s;
+}
+
 function replaceIdMeta(html, id, value) {
   const safe = escAttr(value);
   const re = new RegExp('(<meta[^>]*id="' + id + '"[^>]*content=")([^"]*)(")', 'i');
@@ -142,8 +176,8 @@ module.exports = async (req, res) => {
   const article = all.find((a) => String(a && a.id) === id) || null;
   const canonicalUrl = article ? (base + '/article/' + encodeURIComponent(String(article.id))) : (base + '/article/' + encodeURIComponent(id || ''));
   const pageTitle = article && article.title ? (article.title + ' · Seedance-2') : 'Seedance-2 News Article — AI Video Industry Coverage';
-  const description = (article && article.description) || 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis. Learn what changed, who it affects, and what to watch next.';
-  const image = (article && article.imageUrl) || (base + '/og-image.png');
+  const description = article ? buildDescription(article) : 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis. Learn what changed, who it affects, and what to watch next.';
+  const image = article ? (toAbsoluteUrl(base, article.imageUrl) || (base + '/og-image.png')) : (base + '/og-image.png');
 
   html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>' + escAttr(pageTitle) + '</title>');
   html = html.replace(/(<meta\s+name="description"\s+content=")([^"]*)(")/i, '$1' + escAttr(description) + '$3');
