@@ -308,6 +308,92 @@
         @media (max-width: 900px) {
             .footer-inner { grid-template-columns: 1fr; }
         }
+        /* Related / latest articles (matches homepage latest cards; h2 section + h3 per card) */
+        .article-related {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .article-related-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.75rem 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .article-related-header h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin: 0;
+        }
+        .article-related-header .view-all {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .article-related-header .view-all:hover { text-decoration: underline; }
+        .article-related-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+        .related-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
+            border: 1px solid rgba(17, 24, 39, 0.06);
+            transition: transform 220ms ease, box-shadow 220ms ease;
+        }
+        .related-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+        }
+        .related-card .card-media {
+            aspect-ratio: 16/10;
+            background: #f0f0f0;
+        }
+        .related-card .card-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .related-card .card-body { padding: 1rem 1.1rem; }
+        .related-card .category {
+            display: inline-block;
+            background: #e8e8e8;
+            color: var(--text);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.22rem 0.5rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .related-card .card-title {
+            font-size: 1.02rem;
+            line-height: 1.38;
+            margin: 0 0 0.45rem;
+            font-weight: 700;
+        }
+        .related-card .card-title a {
+            color: var(--text);
+            text-decoration: none;
+        }
+        .related-card .card-title a:hover { color: var(--accent); text-decoration: underline; }
+        .related-card .meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+        .related-card.is-empty { display: none; }
+        @media (max-width: 900px) {
+            .article-related-grid { grid-template-columns: 1fr; }
+        }
         @media (max-width: 600px) {
             .site-header, .article-wrap { padding-left: 1rem; padding-right: 1rem; }
             .site-nav-bar-inner { padding: 0.65rem 1rem; }
@@ -367,6 +453,39 @@
                 </a>
             </nav>
         </article>
+
+        <section class="article-related" id="articleRelated" style="display:none;" aria-labelledby="related-heading">
+            <div class="article-related-header">
+                <h2 id="related-heading">Latest articles</h2>
+                <a href="/articles.html" class="view-all" title="Browse all Seedance-2 articles">View all →</a>
+            </div>
+            <div class="article-related-grid" role="list">
+                <article class="related-card is-empty" role="listitem" data-related-slot="0">
+                    <div class="card-media" aria-hidden="true"></div>
+                    <div class="card-body">
+                        <span class="category"></span>
+                        <h3 class="card-title"><a href="#"></a></h3>
+                        <p class="meta"></p>
+                    </div>
+                </article>
+                <article class="related-card is-empty" role="listitem" data-related-slot="1">
+                    <div class="card-media" aria-hidden="true"></div>
+                    <div class="card-body">
+                        <span class="category"></span>
+                        <h3 class="card-title"><a href="#"></a></h3>
+                        <p class="meta"></p>
+                    </div>
+                </article>
+                <article class="related-card is-empty" role="listitem" data-related-slot="2">
+                    <div class="card-media" aria-hidden="true"></div>
+                    <div class="card-body">
+                        <span class="category"></span>
+                        <h3 class="card-title"><a href="#"></a></h3>
+                        <p class="meta"></p>
+                    </div>
+                </article>
+            </div>
+        </section>
     </main>
 
     <footer class="site-footer" role="contentinfo">
@@ -404,6 +523,7 @@
         }
         var articleLd = null;
         var breadcrumbLd = null;
+        var relatedListLd = null;
 
         function timeAgo(iso) {
             if (!iso) return '';
@@ -419,6 +539,8 @@
         function showNotFound() {
             document.getElementById('notFound').style.display = 'block';
             document.getElementById('articleContent').style.display = 'none';
+            var rel = document.getElementById('articleRelated');
+            if (rel) rel.style.display = 'none';
         }
 
         function escapeAttr(text) {
@@ -593,6 +715,103 @@
                 nextLink.href = '#';
                 nextLink.setAttribute('title', 'Next article on Seedance-2');
                 nextLink.style.display = 'none';
+            }
+
+            renderRelatedLatest(sorted, article.id);
+        }
+
+        function fillRelatedCard(el, a) {
+            if (!el || !a) return;
+            var base = 'https://www.seedance-2.info';
+            var url = base + '/article/' + encodeURIComponent(a.id || '');
+            var media = el.querySelector('.card-media');
+            var category = el.querySelector('.category');
+            var titleLink = el.querySelector('.card-title a');
+            var meta = el.querySelector('.meta');
+            if (category) category.textContent = a.category || 'News';
+            var fontFamily = a.cardTitleFontFamily || a.fontFamily || 'Inter';
+            var fontSize = a.cardTitleFontSize || a.fontSize || '16px';
+            var color = a.cardTitleColor || a.color || '#1d1d1f';
+            var fontWeight = a.cardTitleFontWeight || a.fontWeight || 'normal';
+            var fontStyle = a.cardTitleFontStyle || a.fontStyle || 'normal';
+            if (titleLink) {
+                titleLink.href = url;
+                titleLink.textContent = a.title || '';
+                titleLink.title = (a.title || 'Article') + ' — Seedance-2';
+                titleLink.style.fontFamily = fontFamily;
+                titleLink.style.fontSize = fontSize;
+                titleLink.style.color = color;
+                titleLink.style.fontWeight = fontWeight;
+                titleLink.style.fontStyle = fontStyle;
+            }
+            if (meta) meta.textContent = (a.author ? 'By ' + a.author + ' · ' : '') + timeAgo(a.publishedAt);
+            if (media) {
+                media.innerHTML = '';
+                if (a.imageUrl) {
+                    var img = document.createElement('img');
+                    img.src = a.imageUrl;
+                    img.alt = a.title ? (a.title + ' — Seedance-2 article thumbnail') : 'Seedance-2 article thumbnail';
+                    img.setAttribute('loading', 'lazy');
+                    img.setAttribute('decoding', 'async');
+                    img.width = 640;
+                    img.height = 400;
+                    media.appendChild(img);
+                }
+            }
+            el.classList.remove('is-empty');
+            el.style.cursor = 'pointer';
+            el.setAttribute('data-article-id', a.id || '');
+            el.onclick = function(e) {
+                if (e.target.closest('a')) return;
+                window.location.href = url;
+            };
+        }
+
+        function renderRelatedLatest(sorted, currentId) {
+            var section = document.getElementById('articleRelated');
+            if (!section) return;
+            var others = sorted.filter(function(x) { return x && x.id !== currentId; });
+            others.sort(function(a, b) {
+                return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
+            });
+            var pick = others.slice(0, 3);
+            var cards = section.querySelectorAll('.related-card');
+            for (var i = 0; i < cards.length; i++) {
+                cards[i].classList.add('is-empty');
+                cards[i].style.display = 'none';
+                cards[i].onclick = null;
+                cards[i].style.cursor = '';
+            }
+            for (var j = 0; j < pick.length && j < cards.length; j++) {
+                cards[j].style.display = '';
+                fillRelatedCard(cards[j], pick[j]);
+            }
+            section.style.display = pick.length ? 'block' : 'none';
+
+            if (relatedListLd && relatedListLd.parentNode) {
+                relatedListLd.parentNode.removeChild(relatedListLd);
+            }
+            if (pick.length) {
+                relatedListLd = document.createElement('script');
+                relatedListLd.type = 'application/ld+json';
+                relatedListLd.textContent = JSON.stringify({
+                    '@context': 'https://schema.org',
+                    '@type': 'ItemList',
+                    name: 'Latest articles',
+                    numberOfItems: pick.length,
+                    itemListElement: pick.map(function(item, idx) {
+                        return {
+                            '@type': 'ListItem',
+                            position: idx + 1,
+                            item: {
+                                '@type': 'Article',
+                                url: 'https://www.seedance-2.info/article/' + encodeURIComponent(item.id || ''),
+                                headline: item.title || 'Article'
+                            }
+                        };
+                    })
+                });
+                document.head.appendChild(relatedListLd);
             }
         }
 
