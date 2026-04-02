@@ -36,8 +36,18 @@
     if (!container || !articleId) return;
     var count = parseCount(initialCount);
     var liked = hasLiked(articleId);
+    var layoutClasses = [];
+    (container.className || '').split(/\s+/).forEach(function (c) {
+      if (!c) return;
+      if (c === 'article-like-slot' || c.indexOf('article-like-slot--') === 0) {
+        layoutClasses.push(c);
+      }
+    });
+    if (layoutClasses.indexOf('article-like-slot') === -1) {
+      layoutClasses.unshift('article-like-slot');
+    }
     container.innerHTML = '';
-    container.className = 'article-like-wrap' + (liked ? ' is-liked' : '');
+    container.className = layoutClasses.concat(['article-like-wrap']).concat(liked ? ['is-liked'] : []).join(' ').trim();
     container.setAttribute('data-article-id', articleId);
 
     var btn = document.createElement('button');
