@@ -222,6 +222,24 @@ function normalizeStatus(value) {
   return v === 'draft' ? 'draft' : 'published';
 }
 
+function publishedAtFromDateOnly(dateStr) {
+  const m = String(dateStr || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dt = new Date(Date.UTC(y, mo - 1, d, 12, 0, 0, 0));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  return dt.toISOString();
+}
+
+function defaultPublishedAtForNew() {
+  const d = new Date();
+  return publishedAtFromDateOnly(
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
+  );
+}
+
 function sortPublishedForPublic(articles) {
   return articles
     .filter((a) => normalizeStatus(a && a.status) === 'published')
@@ -344,7 +362,11 @@ module.exports = async (req, res) => {
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
       const status = normalizeStatus(body.status);
       const nowIso = new Date().toISOString();
-      const publishedAt = status === 'published' ? nowIso : null;
+      const publishedDateInput = String(body.publishedDate ?? '').trim();
+      let publishedAt = null;
+      if (status === 'published') {
+        publishedAt = publishedAtFromDateOnly(publishedDateInput) || defaultPublishedAtForNew();
+      }
       const article = {
         id, title, description, category, imageUrl, author,
         fontFamily, fontSize, color, fontWeight, fontStyle,

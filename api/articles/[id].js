@@ -99,6 +99,24 @@ function normalizeStatus(value) {
   return v === 'draft' ? 'draft' : 'published';
 }
 
+function publishedAtFromDateOnly(dateStr) {
+  const m = String(dateStr || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dt = new Date(Date.UTC(y, mo - 1, d, 12, 0, 0, 0));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  return dt.toISOString();
+}
+
+function defaultPublishedAtForNew() {
+  const d = new Date();
+  return publishedAtFromDateOnly(
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
+  );
+}
+
 async function getArticles() {
   const store = getStore();
   if (!store) return [];
@@ -174,6 +192,7 @@ module.exports = async (req, res) => {
       }
       const existing = articles[index];
       const status = normalizeStatus(body.status ?? existing.status);
+      const publishedDateInput = String(body.publishedDate ?? '').trim();
       const existingLikes = Math.max(0, parseInt(existing.likeCount, 10) || 0);
       let likeCount = existingLikes;
       if (body.likeCount !== undefined && body.likeCount !== null && body.likeCount !== '') {
@@ -203,7 +222,12 @@ module.exports = async (req, res) => {
         updatedAt: new Date().toISOString(),
       };
       if (status === 'published') {
-        if (!updated.publishedAt) updated.publishedAt = new Date().toISOString();
+        const fromDay = publishedAtFromDateOnly(publishedDateInput);
+        if (fromDay) {
+          updated.publishedAt = fromDay;
+        } else if (!updated.publishedAt) {
+          updated.publishedAt = defaultPublishedAtForNew();
+        }
         if (!Number.isFinite(Number(updated.sortOrder))) {
           updated.sortOrder = 0;
           for (let i = 0; i < articles.length; i += 1) {

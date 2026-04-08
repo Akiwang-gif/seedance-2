@@ -438,6 +438,9 @@
                 <input type="text" id="author" name="author" placeholder="Author name">
                 <label for="likeCount">Total likes</label>
                 <input type="number" id="likeCount" name="likeCount" min="0" step="1" value="0" title="Count shown next to Like on the site; visitors add +1 per browser. You can adjust the total here.">
+                <label for="publishedDate">Publish date</label>
+                <input type="date" id="publishedDate" name="publishedDate" title="Shown on the site and used for sorting (day only). New posts default to today.">
+                <p class="sublabel" style="margin-top:-0.25rem;">Used when status is Published (precise to the day). Drafts ignore this until you publish.</p>
 
                 <label>Article body</label>
                 <p class="sublabel" style="margin-bottom:0.5rem;">Edit directly below. The first image in the content will be used as the cover on the homepage.</p>
@@ -622,9 +625,25 @@
             var gateBtn = document.getElementById('gateBtn');
             var gateErr = document.getElementById('gateErr');
 
+            function localTodayYmd() {
+                var d = new Date();
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            }
+            function setDefaultPublishedDate() {
+                var el = document.getElementById('publishedDate');
+                if (el) el.value = localTodayYmd();
+            }
+            function publishedAtToDateInput(iso) {
+                if (!iso) return localTodayYmd();
+                var s = String(iso);
+                var m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+                return m ? m[1] : localTodayYmd();
+            }
+
             function showEditor() {
                 if (cmsGate) cmsGate.style.display = 'none';
                 if (cmsMain) cmsMain.style.display = 'block';
+                setDefaultPublishedDate();
                 loadList();
             }
             function showLogin() {
@@ -921,6 +940,8 @@
                         if (w) w.checked = (a.cardTitleFontWeight === 'bold');
                         if (i) i.checked = (a.cardTitleFontStyle === 'italic');
                         editingArticleStatus = (a.status === 'draft') ? 'draft' : 'published';
+                        var pdEl = document.getElementById('publishedDate');
+                        if (pdEl) pdEl.value = publishedAtToDateInput(a.publishedAt);
                         setEditMode(a.id);
                         updatePreview();
                         msg.textContent = '';
@@ -937,6 +958,7 @@
                     document.getElementById('cardTitleFontWeight').checked = false;
                     document.getElementById('cardTitleFontStyle').checked = false;
                     articleBody.innerHTML = '';
+                    setDefaultPublishedDate();
                     updatePreview();
                     msg.textContent = '';
                 });
@@ -1355,6 +1377,10 @@
                 var likeEl = document.getElementById('likeCount');
                 var likeRaw = likeEl ? parseInt(likeEl.value, 10) : 0;
                 payload.likeCount = Number.isFinite(likeRaw) && likeRaw >= 0 ? likeRaw : 0;
+                if (targetStatus === 'published') {
+                    var pdVal = document.getElementById('publishedDate');
+                    if (pdVal && pdVal.value) payload.publishedDate = pdVal.value;
+                }
                 var url = apiBase() + '/api/articles';
                 var method = 'POST';
                 if (editingArticleId) {
@@ -1382,6 +1408,7 @@
                         document.getElementById('cardTitleColor').value = '#1d1d1f';
                         document.getElementById('cardTitleFontWeight').checked = false;
                         document.getElementById('cardTitleFontStyle').checked = false;
+                        setDefaultPublishedDate();
                         articleBody.innerHTML = '';
                         updatePreview();
                         loadList();

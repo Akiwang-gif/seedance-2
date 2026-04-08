@@ -68,6 +68,25 @@ function normalizeStatus(value) {
   return v === 'draft' ? 'draft' : 'published';
 }
 
+/** YYYY-MM-DD → ISO timestamp (noon UTC) for stable day-level sorting and display */
+function publishedAtFromDateOnly(dateStr) {
+  const m = String(dateStr || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dt = new Date(Date.UTC(y, mo - 1, d, 12, 0, 0, 0));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  return dt.toISOString();
+}
+
+function defaultPublishedAtForNew() {
+  const d = new Date();
+  return publishedAtFromDateOnly(
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
+  );
+}
+
 function sortPublishedForPublic(articles) {
   return articles
     .filter((a) => normalizeStatus(a && a.status) === 'published')
@@ -165,6 +184,7 @@ const server = http.createServer(async (req, res) => {
       let cardTitleFontFamily = '', cardTitleFontSize = '', cardTitleColor = '', cardTitleFontWeight = 'normal', cardTitleFontStyle = 'normal';
       let bodyHtml = '';
       let status = 'published';
+      let publishedDateInput = '';
 
       if (isMultipart) {
         ensureDataDir();
@@ -204,6 +224,7 @@ const server = http.createServer(async (req, res) => {
         cardTitleFontWeight = String(get(fields, 'cardTitleFontWeight')).trim() || 'normal';
         cardTitleFontStyle = String(get(fields, 'cardTitleFontStyle')).trim() || 'normal';
         status = normalizeStatus(get(fields, 'status'));
+        publishedDateInput = String(get(fields, 'publishedDate')).trim();
         bodyHtml = String(get(fields, 'bodyHtml') || '').trim();
         if (bodyHtml) {
           const firstImgMatch = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -243,6 +264,7 @@ const server = http.createServer(async (req, res) => {
         cardTitleFontWeight = String(body.cardTitleFontWeight ?? 'normal').trim() || 'normal';
         cardTitleFontStyle = String(body.cardTitleFontStyle ?? 'normal').trim() || 'normal';
         status = normalizeStatus(body.status);
+        publishedDateInput = String(body.publishedDate ?? '').trim();
         bodyHtml = String(body.bodyHtml ?? '').trim();
         if (bodyHtml) {
           const firstImgMatch = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -255,6 +277,10 @@ const server = http.createServer(async (req, res) => {
       const articles = readArticles();
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
       const nowIso = new Date().toISOString();
+      let publishedAtResolved = null;
+      if (status === 'published') {
+        publishedAtResolved = publishedAtFromDateOnly(publishedDateInput) || defaultPublishedAtForNew();
+      }
       const article = {
         id,
         title,
@@ -276,7 +302,7 @@ const server = http.createServer(async (req, res) => {
         likeCount: 0,
         createdAt: nowIso,
         updatedAt: nowIso,
-        publishedAt: status === 'published' ? nowIso : null,
+        publishedAt: publishedAtResolved,
       };
       if (bodyHtml) article.bodyHtml = bodyHtml;
       let next = articles.slice();
@@ -417,6 +443,7 @@ const server = http.createServer(async (req, res) => {
       const cardTitleFontWeight = String(body.cardTitleFontWeight ?? existing.cardTitleFontWeight ?? 'normal').trim() || 'normal';
       const cardTitleFontStyle = String(body.cardTitleFontStyle ?? existing.cardTitleFontStyle ?? 'normal').trim() || 'normal';
       const status = normalizeStatus(body.status ?? existing.status);
+      const publishedDateInput = String(body.publishedDate ?? '').trim();
       let bodyHtml = String(body.bodyHtml ?? existing.bodyHtml ?? '').trim();
       if (bodyHtml) {
         const firstImgMatch = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -452,7 +479,12 @@ const server = http.createServer(async (req, res) => {
         updatedAt: new Date().toISOString(),
       };
       if (status === 'published') {
-        if (!updated.publishedAt) updated.publishedAt = new Date().toISOString();
+        const fromDay = publishedAtFromDateOnly(publishedDateInput);
+        if (fromDay) {
+          updated.publishedAt = fromDay;
+        } else if (!updated.publishedAt) {
+          updated.publishedAt = defaultPublishedAtForNew();
+        }
       } else {
         updated.publishedAt = null;
         delete updated.sortOrder;
