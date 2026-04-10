@@ -591,6 +591,22 @@
             return d.toLocaleDateString();
         }
 
+        function articleCoverImageUrl(article) {
+            if (!article) return '';
+            var html = article.bodyHtml;
+            if (html && String(html).trim()) {
+                var m = String(html).match(/<img[^>]+src=["']([^"']+)["']/i);
+                if (m && m[1]) return m[1].trim();
+            }
+            if (article.contentBlocks && article.contentBlocks.length) {
+                for (var i = 0; i < article.contentBlocks.length; i++) {
+                    var b = article.contentBlocks[i];
+                    if (b && b.type === 'image' && b.url) return String(b.url).trim();
+                }
+            }
+            return String(article.imageUrl || '').trim();
+        }
+
         function showNotFound() {
             document.getElementById('notFound').style.display = 'block';
             document.getElementById('articleContent').style.display = 'none';
@@ -620,7 +636,7 @@
             if (altEn) altEn.setAttribute('href', canonicalUrl);
             if (altDefault) altDefault.setAttribute('href', canonicalUrl);
             var descriptionText = article.description || 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis. Learn what changed, who it affects, and what to watch next.';
-            var imageUrl = article.imageUrl || 'https://www.seedance-2.info/og-image.png';
+            var imageUrl = articleCoverImageUrl(article) || 'https://www.seedance-2.info/og-image.png';
             var metaDesc = document.querySelector('meta[name="description"]');
             if (metaDesc) metaDesc.setAttribute('content', descriptionText);
             var ogTitle = document.getElementById('ogTitle');
@@ -812,9 +828,10 @@
             if (meta) meta.textContent = (a.author ? 'By ' + a.author + ' · ' : '') + timeAgo(a.publishedAt);
             if (media) {
                 media.innerHTML = '';
-                if (a.imageUrl) {
+                var thumb = articleCoverImageUrl(a);
+                if (thumb) {
                     var img = document.createElement('img');
-                    img.src = a.imageUrl;
+                    img.src = thumb;
                     img.alt = a.title ? (a.title + ' — Seedance-2 article thumbnail') : 'Seedance-2 article thumbnail';
                     img.setAttribute('loading', 'lazy');
                     img.setAttribute('decoding', 'async');

@@ -146,6 +146,21 @@ function toAbsoluteUrl(base, urlLike) {
   return s;
 }
 
+/** Prefer first <img> in body so cards / og:image match what readers see in the article. */
+function firstImageSrcFromBodyHtml(html) {
+  const m = String(html || '').match(/<img[^>]+src=["']([^"']+)["']/i);
+  return m && m[1] ? m[1].trim() : '';
+}
+
+function firstImageFromContentBlocks(blocks) {
+  if (!Array.isArray(blocks)) return '';
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (b && b.type === 'image' && b.url) return String(b.url).trim();
+  }
+  return '';
+}
+
 function replaceIdMeta(html, id, value) {
   const safe = escAttr(value);
   const re = new RegExp('(<meta[^>]*id="' + id + '"[^>]*content=")([^"]*)(")', 'i');
@@ -177,7 +192,14 @@ module.exports = async (req, res) => {
   const canonicalUrl = article ? (base + '/article/' + encodeURIComponent(String(article.id))) : (base + '/article/' + encodeURIComponent(id || ''));
   const pageTitle = article && article.title ? (article.title + ' · Seedance-2') : 'Seedance-2 News Article — AI Video Industry Coverage';
   const description = article ? buildDescription(article) : 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis. Learn what changed, who it affects, and what to watch next.';
-  const image = article ? (toAbsoluteUrl(base, article.imageUrl) || (base + '/og-image.png')) : (base + '/og-image.png');
+  const coverSrc = article
+    ? (firstImageSrcFromBodyHtml(article.bodyHtml)
+      || firstImageFromContentBlocks(article.contentBlocks)
+      || String(article.imageUrl || '').trim())
+    : '';
+  const image = article
+    ? (toAbsoluteUrl(base, coverSrc) || (base + '/og-image.png'))
+    : (base + '/og-image.png');
 
   html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>' + escAttr(pageTitle) + '</title>');
   html = html.replace(/(<meta\s+name="description"\s+content=")([^"]*)(")/i, '$1' + escAttr(description) + '$3');

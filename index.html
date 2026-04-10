@@ -929,6 +929,22 @@
             if (sec < 604800) return Math.floor(sec / 86400) + ' days ago';
             return d.toLocaleDateString();
         }
+        /** Match list thumbnails to the first image in article body, then saved cover imageUrl. */
+        function articleCoverImageUrl(article) {
+            if (!article) return '';
+            var html = article.bodyHtml;
+            if (html && String(html).trim()) {
+                var m = String(html).match(/<img[^>]+src=["']([^"']+)["']/i);
+                if (m && m[1]) return m[1].trim();
+            }
+            if (article.contentBlocks && article.contentBlocks.length) {
+                for (var i = 0; i < article.contentBlocks.length; i++) {
+                    var b = article.contentBlocks[i];
+                    if (b && b.type === 'image' && b.url) return String(b.url).trim();
+                }
+            }
+            return String(article.imageUrl || '').trim();
+        }
         function fillCard(el, article) {
             if (!article) return;
             var media = el.querySelector('.card-media');
@@ -951,10 +967,11 @@
                 title.style.fontStyle = fontStyle;
             }
             if (meta) meta.textContent = (article.author ? 'By ' + article.author + ' • ' : '') + timeAgo(article.publishedAt);
-            if (media && article.imageUrl) {
+            var cover = articleCoverImageUrl(article);
+            if (media && cover) {
                 media.innerHTML = '';
                 var img = document.createElement('img');
-                img.src = article.imageUrl;
+                img.src = cover;
                 img.alt = article.title
                     ? (article.title + ' - Seedance-2 featured news image')
                     : 'Seedance-2 featured news image';
