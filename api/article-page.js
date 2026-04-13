@@ -148,8 +148,22 @@ function toAbsoluteUrl(base, urlLike) {
 
 /** Prefer first <img> in body so cards / og:image match what readers see in the article. */
 function firstImageSrcFromBodyHtml(html) {
-  const m = String(html || '').match(/<img[^>]+src=["']([^"']+)["']/i);
-  return m && m[1] ? m[1].trim() : '';
+  if (!html) return '';
+  const re = /<img\b[^>]*>/gi;
+  const s = String(html);
+  let m;
+  while ((m = re.exec(s)) !== null) {
+    const t = m[0];
+    const d = t.match(/\bsrc\s*=\s*"([^"]*)"/i);
+    const sq = t.match(/\bsrc\s*=\s*'([^']*)'/i);
+    const uq = t.match(/\bsrc\s*=\s*([^\s>]+)/i);
+    let u = '';
+    if (d && d[1]) u = d[1].trim();
+    else if (sq && sq[1]) u = sq[1].trim();
+    else if (uq && uq[1]) u = uq[1].trim();
+    if (u) return u;
+  }
+  return '';
 }
 
 function firstImageFromContentBlocks(blocks) {

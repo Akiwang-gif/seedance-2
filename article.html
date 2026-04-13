@@ -561,6 +561,7 @@
         </div>
     </footer>
 
+    <script src="/article-cover.js"></script>
     <script src="/article-likes.js"></script>
     <script>
     (function() {
@@ -589,22 +590,6 @@
             if (sec < 86400) return Math.floor(sec / 3600) + ' hours ago';
             if (sec < 604800) return Math.floor(sec / 86400) + ' days ago';
             return d.toLocaleDateString();
-        }
-
-        function articleCoverImageUrl(article) {
-            if (!article) return '';
-            var html = article.bodyHtml;
-            if (html && String(html).trim()) {
-                var m = String(html).match(/<img[^>]+src=["']([^"']+)["']/i);
-                if (m && m[1]) return m[1].trim();
-            }
-            if (article.contentBlocks && article.contentBlocks.length) {
-                for (var i = 0; i < article.contentBlocks.length; i++) {
-                    var b = article.contentBlocks[i];
-                    if (b && b.type === 'image' && b.url) return String(b.url).trim();
-                }
-            }
-            return String(article.imageUrl || '').trim();
         }
 
         function showNotFound() {
@@ -636,7 +621,7 @@
             if (altEn) altEn.setAttribute('href', canonicalUrl);
             if (altDefault) altDefault.setAttribute('href', canonicalUrl);
             var descriptionText = article.description || 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis. Learn what changed, who it affects, and what to watch next.';
-            var imageUrl = articleCoverImageUrl(article) || 'https://www.seedance-2.info/og-image.png';
+            var imageUrl = (typeof articleCoverImageUrl === 'function' ? articleCoverImageUrl(article) : (String(article.imageUrl || '').trim())) || 'https://www.seedance-2.info/og-image.png';
             var metaDesc = document.querySelector('meta[name="description"]');
             if (metaDesc) metaDesc.setAttribute('content', descriptionText);
             var ogTitle = document.getElementById('ogTitle');
@@ -828,7 +813,7 @@
             if (meta) meta.textContent = (a.author ? 'By ' + a.author + ' · ' : '') + timeAgo(a.publishedAt);
             if (media) {
                 media.innerHTML = '';
-                var thumb = articleCoverImageUrl(a);
+                var thumb = typeof articleCoverImageUrl === 'function' ? articleCoverImageUrl(a) : (String(a.imageUrl || '').trim());
                 if (thumb) {
                     var img = document.createElement('img');
                     img.src = thumb;

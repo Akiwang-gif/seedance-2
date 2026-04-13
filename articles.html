@@ -614,6 +614,7 @@
         </div>
     </footer>
 
+    <script src="/article-cover.js"></script>
     <script src="/article-likes.js"></script>
     <script>
     (function() {
@@ -689,22 +690,6 @@
             return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
         }
 
-        function articleCoverImageUrl(article) {
-            if (!article) return '';
-            var html = article.bodyHtml;
-            if (html && String(html).trim()) {
-                var m = String(html).match(/<img[^>]+src=["']([^"']+)["']/i);
-                if (m && m[1]) return m[1].trim();
-            }
-            if (article.contentBlocks && article.contentBlocks.length) {
-                for (var i = 0; i < article.contentBlocks.length; i++) {
-                    var b = article.contentBlocks[i];
-                    if (b && b.type === 'image' && b.url) return String(b.url).trim();
-                }
-            }
-            return String(article.imageUrl || '').trim();
-        }
-
         function renderCards(articles) {
             gridEl.innerHTML = '';
             articles.forEach(function(article) {
@@ -713,7 +698,7 @@
                 card.setAttribute('data-article-id', article.id);
 
                 var mediaHtml = '<div class="card-media"></div>';
-                var coverSrc = articleCoverImageUrl(article);
+                var coverSrc = typeof articleCoverImageUrl === 'function' ? articleCoverImageUrl(article) : (String(article.imageUrl || '').trim());
                 if (coverSrc) {
                     var coverAlt = article.title
                         ? (article.title + ' - Seedance-2 article cover image')
