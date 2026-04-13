@@ -1,7 +1,7 @@
 /**
- * Card / OG cover URL: saved imageUrl first, else first image in body, else contentBlocks.
+ * Card / OG cover: first <img> in bodyHtml (matches admin: "first image = cover"), then contentBlocks, then imageUrl.
+ * So re-uploading images in the editor wins over a stale saved imageUrl (e.g. old third-party links).
  * Parses src, srcset, quoted/unquoted src; decodes basic HTML entities in URLs.
- * Resolves relative / protocol-relative URLs so images work on any device (same origin).
  */
 (function (global) {
   function decodeUrlEntities(u) {
@@ -63,24 +63,21 @@
   function articleCoverImageUrl(article) {
     if (!article) return '';
     var raw = '';
-    var explicit = String(article.imageUrl || '').trim();
-    if (explicit) raw = explicit;
-    else {
-      var fromBody = firstImgSrcFromHtml(article.bodyHtml);
-      if (fromBody) raw = fromBody;
-      else if (article.contentBlocks && article.contentBlocks.length) {
-        for (var i = 0; i < article.contentBlocks.length; i++) {
-          var b = article.contentBlocks[i];
-          if (b && b.type === 'image' && b.url) {
-            var u = String(b.url).trim();
-            if (u) {
-              raw = u;
-              break;
-            }
+    var fromBody = firstImgSrcFromHtml(article.bodyHtml);
+    if (fromBody) raw = fromBody;
+    else if (article.contentBlocks && article.contentBlocks.length) {
+      for (var i = 0; i < article.contentBlocks.length; i++) {
+        var b = article.contentBlocks[i];
+        if (b && b.type === 'image' && b.url) {
+          var u = String(b.url).trim();
+          if (u) {
+            raw = u;
+            break;
           }
         }
       }
     }
+    if (!raw) raw = String(article.imageUrl || '').trim();
     return absolutizeImageUrl(raw);
   }
 

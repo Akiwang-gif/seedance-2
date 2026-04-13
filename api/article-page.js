@@ -226,9 +226,9 @@ module.exports = async (req, res) => {
   const pageTitle = article && article.title ? (article.title + ' · Seedance-2') : 'Seedance-2 News Article — AI Video Industry Coverage';
   const description = article ? buildDescription(article) : 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis. Learn what changed, who it affects, and what to watch next.';
   const coverSrc = article
-    ? (String(article.imageUrl || '').trim()
-      || firstImageSrcFromBodyHtml(article.bodyHtml)
-      || firstImageFromContentBlocks(article.contentBlocks))
+    ? (firstImageSrcFromBodyHtml(article.bodyHtml)
+      || firstImageFromContentBlocks(article.contentBlocks)
+      || String(article.imageUrl || '').trim())
     : '';
   const image = article
     ? (toAbsoluteUrl(base, coverSrc) || (base + '/og-image.png'))
