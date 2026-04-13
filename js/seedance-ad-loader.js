@@ -1,6 +1,7 @@
 /**
- * Loads /ads-snippet.html (paste your ad network "GET CODE" there) and injects it
- * into #seedance-ad-root. Scripts are re-created so they execute.
+ * Loads /ads-snippet.html and injects into #seedance-ad-root.
+ * External scripts are chained with onload so atOptions + invoke.js stay in order
+ * (fixes missing iframe banners when scripts run out of order).
  */
 (function () {
     function ensureStyle() {
@@ -8,30 +9,68 @@
         var st = document.createElement('style');
         st.id = 'seedance-ad-slot-style';
         st.textContent =
-            '.seedance-ad-slot{margin:1.25rem auto;max-width:728px;padding:0 1rem;text-align:center;min-height:0}';
+            '.seedance-ad-slot{margin:1.25rem auto;max-width:728px;padding:0 1rem;text-align:center;min-height:0}' +
+            '.seedance-ad-slot--banner{margin-bottom:0.75rem}';
         document.head.appendChild(st);
     }
 
-    function appendParsed(container, html) {
+    function appendParsedSequential(container, html) {
         var text = String(html || '').trim();
         if (!text) return;
         var tmp = document.createElement('div');
         tmp.innerHTML = text;
-        while (tmp.firstChild) {
-            var node = tmp.firstChild;
-            tmp.removeChild(node);
-            if (node.nodeName === 'SCRIPT') {
-                var s = document.createElement('script');
-                for (var i = 0; i < node.attributes.length; i++) {
-                    var a = node.attributes[i];
+        var nodes = Array.prototype.slice.call(tmp.childNodes);
+
+        function step(i) {
+            if (i >= nodes.length) return;
+            var node = nodes[i];
+
+            if (node.nodeType === 3) {
+                if (!String(node.textContent || '').trim()) {
+                    step(i + 1);
+                    return;
+                }
+                container.appendChild(node);
+                step(i + 1);
+                return;
+            }
+
+            if (node.nodeType === 8) {
+                container.appendChild(node);
+                step(i + 1);
+                return;
+            }
+
+            if (node.nodeName !== 'SCRIPT') {
+                container.appendChild(node);
+                step(i + 1);
+                return;
+            }
+
+            var s = document.createElement('script');
+            var hasSrc = node.src && String(node.src).length > 0;
+
+            if (hasSrc) {
+                for (var j = 0; j < node.attributes.length; j++) {
+                    var a = node.attributes[j];
                     s.setAttribute(a.name, a.value);
                 }
-                s.textContent = node.textContent;
+                s.async = false;
+                s.onload = function () {
+                    step(i + 1);
+                };
+                s.onerror = function () {
+                    step(i + 1);
+                };
                 container.appendChild(s);
             } else {
-                container.appendChild(node);
+                s.textContent = node.textContent;
+                container.appendChild(s);
+                step(i + 1);
             }
         }
+
+        step(0);
     }
 
     function run() {
@@ -48,7 +87,7 @@
                 return r.ok ? r.text() : '';
             })
             .then(function (html) {
-                appendParsed(el, html);
+                appendParsedSequential(el, html);
             })
             .catch(function () {});
     }
