@@ -823,6 +823,7 @@
                     img.src = thumb;
                     img.alt = a.title ? (a.title + ' — Seedance-2 article thumbnail') : 'Seedance-2 article thumbnail';
                     img.setAttribute('loading', 'lazy');
+                    img.referrerPolicy = 'no-referrer';
                     img.setAttribute('decoding', 'async');
                     img.width = 640;
                     img.height = 400;
