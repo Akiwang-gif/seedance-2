@@ -55,6 +55,9 @@
                     var a = node.attributes[j];
                     s.setAttribute(a.name, a.value);
                 }
+                if (!s.referrerPolicy) {
+                    s.referrerPolicy = 'strict-origin-when-cross-origin';
+                }
                 s.async = false;
                 s.onload = function () {
                     step(i + 1);
