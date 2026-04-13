@@ -952,7 +952,9 @@
                 title.style.fontStyle = fontStyle;
             }
             if (meta) meta.textContent = (article.author ? 'By ' + article.author + ' • ' : '') + timeAgo(article.publishedAt);
-            var cover = typeof articleCoverImageUrl === 'function' ? articleCoverImageUrl(article) : (String(article.imageUrl || '').trim());
+            var cover = typeof window.articleCoverImageUrl === 'function'
+                ? window.articleCoverImageUrl(article)
+                : String(article.imageUrl || '').trim();
             if (media && cover) {
                 media.innerHTML = '';
                 var img = document.createElement('img');

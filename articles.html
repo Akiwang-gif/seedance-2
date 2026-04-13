@@ -698,7 +698,9 @@
                 card.setAttribute('data-article-id', article.id);
 
                 var mediaHtml = '<div class="card-media"></div>';
-                var coverSrc = typeof articleCoverImageUrl === 'function' ? articleCoverImageUrl(article) : (String(article.imageUrl || '').trim());
+                var coverSrc = typeof window.articleCoverImageUrl === 'function'
+                    ? window.articleCoverImageUrl(article)
+                    : String(article.imageUrl || '').trim();
                 if (coverSrc) {
                     var coverAlt = article.title
                         ? (article.title + ' - Seedance-2 article cover image')

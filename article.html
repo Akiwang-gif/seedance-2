@@ -621,7 +621,9 @@
             if (altEn) altEn.setAttribute('href', canonicalUrl);
             if (altDefault) altDefault.setAttribute('href', canonicalUrl);
             var descriptionText = article.description || 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis. Learn what changed, who it affects, and what to watch next.';
-            var imageUrl = (typeof articleCoverImageUrl === 'function' ? articleCoverImageUrl(article) : (String(article.imageUrl || '').trim())) || 'https://www.seedance-2.info/og-image.png';
+            var imageUrl = (typeof window.articleCoverImageUrl === 'function'
+                ? window.articleCoverImageUrl(article)
+                : String(article.imageUrl || '').trim()) || 'https://www.seedance-2.info/og-image.png';
             var metaDesc = document.querySelector('meta[name="description"]');
             if (metaDesc) metaDesc.setAttribute('content', descriptionText);
             var ogTitle = document.getElementById('ogTitle');
@@ -813,7 +815,9 @@
             if (meta) meta.textContent = (a.author ? 'By ' + a.author + ' · ' : '') + timeAgo(a.publishedAt);
             if (media) {
                 media.innerHTML = '';
-                var thumb = typeof articleCoverImageUrl === 'function' ? articleCoverImageUrl(a) : (String(a.imageUrl || '').trim());
+                var thumb = typeof window.articleCoverImageUrl === 'function'
+                    ? window.articleCoverImageUrl(a)
+                    : String(a.imageUrl || '').trim();
                 if (thumb) {
                     var img = document.createElement('img');
                     img.src = thumb;

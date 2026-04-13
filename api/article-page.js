@@ -146,7 +146,22 @@ function toAbsoluteUrl(base, urlLike) {
   return s;
 }
 
-/** Prefer first <img> in body so cards / og:image match what readers see in the article. */
+function decodeUrlEntities(u) {
+  return String(u || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+function firstUrlFromSrcset(srcset) {
+  if (!srcset) return '';
+  const part = String(srcset).split(',')[0].trim();
+  const m = part.match(/^(\S+)/);
+  return m ? decodeUrlEntities(m[1]) : '';
+}
+
+/** First real image in body: src (any form) or first candidate in srcset. */
 function firstImageSrcFromBodyHtml(html) {
   if (!html) return '';
   const re = /<img\b[^>]*>/gi;
@@ -158,9 +173,13 @@ function firstImageSrcFromBodyHtml(html) {
     const sq = t.match(/\bsrc\s*=\s*'([^']*)'/i);
     const uq = t.match(/\bsrc\s*=\s*([^\s>]+)/i);
     let u = '';
-    if (d && d[1]) u = d[1].trim();
-    else if (sq && sq[1]) u = sq[1].trim();
-    else if (uq && uq[1]) u = uq[1].trim();
+    if (d && d[1]) u = decodeUrlEntities(d[1]);
+    else if (sq && sq[1]) u = decodeUrlEntities(sq[1]);
+    else if (uq && uq[1]) u = decodeUrlEntities(uq[1]);
+    if (!u) {
+      const ss = t.match(/\bsrcset\s*=\s*"([^"]+)"/i) || t.match(/\bsrcset\s*=\s*'([^']+)'/i);
+      if (ss && ss[1]) u = firstUrlFromSrcset(ss[1]);
+    }
     if (u) return u;
   }
   return '';
@@ -207,9 +226,9 @@ module.exports = async (req, res) => {
   const pageTitle = article && article.title ? (article.title + ' · Seedance-2') : 'Seedance-2 News Article — AI Video Industry Coverage';
   const description = article ? buildDescription(article) : 'Open this Seedance-2 article for AI video news, Seedance platform context, and industry analysis. Learn what changed, who it affects, and what to watch next.';
   const coverSrc = article
-    ? (firstImageSrcFromBodyHtml(article.bodyHtml)
-      || firstImageFromContentBlocks(article.contentBlocks)
-      || String(article.imageUrl || '').trim())
+    ? (String(article.imageUrl || '').trim()
+      || firstImageSrcFromBodyHtml(article.bodyHtml)
+      || firstImageFromContentBlocks(article.contentBlocks))
     : '';
   const image = article
     ? (toAbsoluteUrl(base, coverSrc) || (base + '/og-image.png'))
