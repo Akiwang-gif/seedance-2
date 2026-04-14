@@ -78,7 +78,11 @@
       }
     }
     if (!raw) raw = String(article.imageUrl || '').trim();
-    return absolutizeImageUrl(raw);
+    var abs = absolutizeImageUrl(raw);
+    if (abs && /\.public\.blob\.vercel-storage\.com\//i.test(abs)) {
+      return '/api/media?u=' + encodeURIComponent(abs);
+    }
+    return abs;
   }
 
   global.articleCoverImageUrl = articleCoverImageUrl;

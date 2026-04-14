@@ -15,6 +15,8 @@
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
+const articlesApi = require('./articles');
+const { proxyBlobSrcUrl } = require('./_lib/proxy-blob-urls');
 
 let kvStore = null;
 function getStore() {
@@ -230,9 +232,14 @@ module.exports = async (req, res) => {
       || firstImageFromContentBlocks(article.contentBlocks)
       || String(article.imageUrl || '').trim())
     : '';
-  const image = article
-    ? (toAbsoluteUrl(base, coverSrc) || (base + '/og-image.png'))
-    : (base + '/og-image.png');
+  let image = article ? (toAbsoluteUrl(base, coverSrc) || (base + '/og-image.png')) : (base + '/og-image.png');
+  if (article && coverSrc && /\.public\.blob\.vercel-storage\.com\//i.test(String(coverSrc))) {
+    const full = /^https?:\/\//i.test(coverSrc) ? coverSrc : toAbsoluteUrl(base, coverSrc);
+    const proxied = proxyBlobSrcUrl(full);
+    if (proxied && proxied.startsWith('/api/')) {
+      image = base.replace(/\/$/, '') + proxied;
+    }
+  }
 
   html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>' + escAttr(pageTitle) + '</title>');
   html = html.replace(/(<meta\s+name="description"\s+content=")([^"]*)(")/i, '$1' + escAttr(description) + '$3');
@@ -248,7 +255,10 @@ module.exports = async (req, res) => {
   html = replaceIdMeta(html, 'twitterDescription', description);
   html = replaceIdMeta(html, 'twitterImage', image);
 
-  html = injectBootstrap(html, { id, article, all });
+  const mapPub = articlesApi.mapPublishedArticleForPublic;
+  const articleForClient = article ? mapPub(article) : null;
+  const allForClient = Array.isArray(all) ? all.map(mapPub) : [];
+  html = injectBootstrap(html, { id, article: articleForClient, all: allForClient });
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', article ? 'public, s-maxage=120, stale-while-revalidate=600' : 'public, s-maxage=30, stale-while-revalidate=120');

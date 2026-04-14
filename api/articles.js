@@ -88,6 +88,7 @@ function getStore() {
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 const { requireWriteAuth } = require('./_lib/cms-auth');
+const { proxyBlobUrlsInHtml } = require('./_lib/proxy-blob-urls');
 const { URL } = require('url');
 
 function parseBody(req) {
@@ -253,7 +254,17 @@ function sortPublishedForPublic(articles) {
     });
 }
 
-module.exports = async (req, res) => {
+function mapPublishedArticleForPublic(a) {
+  const title = a.title || '';
+  let bodyHtml = a.bodyHtml;
+  if (bodyHtml) {
+    bodyHtml = optimizeBodyHtml(bodyHtml, title);
+    bodyHtml = proxyBlobUrlsInHtml(bodyHtml);
+  }
+  return { ...a, bodyHtml };
+}
+
+const handler = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
@@ -274,11 +285,12 @@ module.exports = async (req, res) => {
       status: normalizeStatus(a && a.status),
     }));
     const visible = includeAll ? normalized : sortPublishedForPublic(normalized);
+    const payload = includeAll ? visible : visible.map(mapPublishedArticleForPublic);
     res.setHeader('X-Store', storeType || 'none');
-    res.setHeader('X-Articles-Count', String(visible.length));
+    res.setHeader('X-Articles-Count', String(payload.length));
     res.setHeader('Access-Control-Expose-Headers', 'X-Store, X-Articles-Count');
     res.writeHead(200, CORS);
-    res.end(JSON.stringify(visible));
+    res.end(JSON.stringify(payload));
     return;
   }
 
@@ -404,3 +416,7 @@ module.exports = async (req, res) => {
   res.writeHead(405, CORS);
   res.end(JSON.stringify({ error: 'Method not allowed' }));
 };
+
+handler.optimizeBodyHtml = optimizeBodyHtml;
+handler.mapPublishedArticleForPublic = mapPublishedArticleForPublic;
+module.exports = handler;
