@@ -723,6 +723,9 @@
             bodyEl.style.fontStyle = fontStyle;
             if (article.bodyHtml && article.bodyHtml.trim()) {
                 bodyEl.innerHTML = article.bodyHtml.trim();
+                Array.prototype.forEach.call(bodyEl.querySelectorAll('img'), function (im) {
+                    im.removeAttribute('referrerpolicy');
+                });
             } else if (article.contentBlocks && article.contentBlocks.length > 0) {
                 bodyEl.innerHTML = '';
                 article.contentBlocks.forEach(function(block) {
@@ -824,7 +827,6 @@
                     img.src = thumb;
                     img.alt = a.title ? (a.title + ' — Seedance-2 article thumbnail') : 'Seedance-2 article thumbnail';
                     img.setAttribute('loading', 'lazy');
-                    img.referrerPolicy = 'no-referrer';
                     img.setAttribute('decoding', 'async');
                     img.width = 640;
                     img.height = 400;

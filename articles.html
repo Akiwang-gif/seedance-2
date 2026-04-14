@@ -707,7 +707,7 @@
                     var coverAlt = article.title
                         ? (article.title + ' - Seedance-2 article cover image')
                         : 'Seedance-2 article cover image';
-                    mediaHtml = '<div class="card-media"><img loading="lazy" referrerpolicy="no-referrer" src="' + coverSrc.replace(/"/g, '&quot;') + '" alt="' + coverAlt.replace(/"/g, '&quot;') + '"></div>';
+                    mediaHtml = '<div class="card-media"><img loading="lazy" src="' + coverSrc.replace(/"/g, '&quot;') + '" alt="' + coverAlt.replace(/"/g, '&quot;') + '"></div>';
                 }
 
                 card.innerHTML = mediaHtml +
