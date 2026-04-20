@@ -1,0 +1,17 @@
+# Cloudflare Pages — Phase 1 安全预览（静态 + functions/api 代理至 Vercel）
+# 部署：设置 CLOUDFLARE_API_TOKEN（及可选 CLOUDFLARE_ACCOUNT_ID）后执行 npm run deploy:cf
+name = "seedance-2-cf-preview"
+compatibility_date = "2025-04-03"
+pages_build_output_dir = "dist-cf"
+
+# 可选：填入后 wrangler 在非交互环境下可不依赖 CLOUDFLARE_ACCOUNT_ID 环境变量
+# account_id = ""
+
+# CMS articles KV binding (Phase 2)
+[[kv_namespaces]]
+binding = "CMS_KV"
+id = "705bd42848594a2fbc8d56a11a4bb52b"
+
+[[r2_buckets]]
+binding = "CMS_UPLOAD_R2"
+bucket_name = "seedance-2-upload"

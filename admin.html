@@ -136,7 +136,8 @@
         .editor-toolbar .tool-btn:hover { background: #eee; }
         .editor-toolbar #toolColor { width: 32px; height: 28px; padding: 2px; margin: 0; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
         .editor-toolbar .toolbar-sep { color: var(--border); margin: 0 0.15rem; font-size: 0.9rem; }
-        .editor-toolbar #toolInsertImage { background: #e8e8e8; color: var(--text); }
+        .editor-toolbar #toolInsertImage,
+        .editor-toolbar #toolInsertImageUrl { background: #e8e8e8; color: var(--text); }
         .editor-toolbar .tool-btn-preview { margin-left: auto; background: #e0e0e0; color: var(--text); }
         .editor-body .article-img-wrap { margin: 0.75rem 0; }
         .editor-body .article-img-wrap img { display: inline-block; }
@@ -475,6 +476,7 @@
                         <button type="button" class="tool-btn" data-cmd="justifyFull" title="Justify">Justify</button>
                         <span class="toolbar-sep">|</span>
                         <button type="button" id="toolInsertImage" title="Insert image">Image</button>
+                        <button type="button" id="toolInsertImageUrl" title="Insert image from URL">Image URL</button>
                         <input type="file" id="toolImageInput" accept="image/*" hidden>
                         <button type="button" id="btnPreview" class="tool-btn-preview" title="Preview">Preview</button>
                     </div>
@@ -1187,7 +1189,30 @@
             function saveSelection() {
                 var sel = window.getSelection();
                 if (!sel || sel.rangeCount === 0) return null;
-                try { return sel.getRangeAt(0).cloneRange(); } catch (e) { return null; }
+                try {
+                    var range = sel.getRangeAt(0);
+                    if (!articleBody.contains(range.commonAncestorContainer)) return null;
+                    return range.cloneRange();
+                } catch (e) { return null; }
+            }
+            function getPreferredEditorRange() {
+                var now = saveSelection();
+                if (now) return now;
+                if (lastEditorRange) {
+                    try { return lastEditorRange.cloneRange(); } catch (e) {}
+                }
+                return null;
+            }
+            function normalizeHttpImageUrl(raw) {
+                var s = String(raw || '').trim();
+                if (!s) return '';
+                try {
+                    var u = new URL(s, window.location.origin || 'https://www.seedance-2.info');
+                    if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+                    return u.href;
+                } catch (e) {
+                    return '';
+                }
             }
             function insertImageAtSelection(url) {
                 focusEditorNoScroll();
@@ -1245,12 +1270,29 @@
             }
             document.getElementById('toolInsertImage').addEventListener('mousedown', function(e) {
                 e.preventDefault();
-                savedSelection = saveSelection();
+                savedSelection = getPreferredEditorRange();
             });
             document.getElementById('toolInsertImage').addEventListener('click', function(e) {
                 e.preventDefault();
-                if (!savedSelection) { focusEditorNoScroll(); savedSelection = saveSelection(); }
+                savedSelection = getPreferredEditorRange();
                 document.getElementById('toolImageInput').click();
+            });
+            document.getElementById('toolInsertImageUrl').addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                savedSelection = getPreferredEditorRange();
+            });
+            document.getElementById('toolInsertImageUrl').addEventListener('click', function(e) {
+                e.preventDefault();
+                savedSelection = getPreferredEditorRange();
+                var input = window.prompt('Paste image URL (http/https):', 'https://');
+                if (input == null) return;
+                var url = normalizeHttpImageUrl(input);
+                if (!url) {
+                    showMessage('Invalid image URL. Please use http/https.', true);
+                    return;
+                }
+                insertImageAtSelection(url);
+                showMessage('Image inserted from URL.');
             });
             document.getElementById('toolImageInput').addEventListener('change', function() {
                 var file = this.files && this.files[0];

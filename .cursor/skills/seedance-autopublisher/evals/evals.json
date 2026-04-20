@@ -1,0 +1,29 @@
+{
+  "skill_name": "seedance-autopublisher",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我追踪最新的 Seedance 2.0 热点，筛选出最适合发布的选题",
+      "expected_output": "输出1-3个候选选题，每个包含热度评分、来源统计、推荐理由",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "以'News'风格撰写一篇关于 Seedance 2.0 新功能发布的英文文章，500-800词",
+      "expected_output": "全英文文章，无禁用词汇，SEO关键词自然植入，包含多张配图",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "以'Analysis'风格撰写一篇 Seedance 2.0 vs Sora 的对比分析文章，1000-1500词",
+      "expected_output": "深度分析文章，多角度对比，有数据支撑，结构清晰",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "为已撰写的文章生成3张配图，并保存到网站草稿箱",
+      "expected_output": "封面图16:9，正文配图4:3或16:9，风格轮换，最终保存草稿成功",
+      "files": []
+    }
+  ]
+}

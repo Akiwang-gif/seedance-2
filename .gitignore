@@ -34,3 +34,11 @@ Thumbs.db
 # CMS data & uploads (local articles and images)
 data/
 uploads/
+generated-images/
+.vercel
+
+# Cloudflare Pages Phase 1 build output
+dist-cf/
+
+# Cloudflare API token（勿提交）
+.cf.env

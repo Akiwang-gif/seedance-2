@@ -46,33 +46,6 @@
       }
     }
     </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "name": "Latest Seedance-2 articles",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "url": "https://www.seedance-2.info/article/mn4c4vy4vr05v4",
-          "name": "Viral Videos, Legal Letters: Seedance 2.0 Hits Pause"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "url": "https://www.seedance-2.info/article/mn5o6daslwjjb1",
-          "name": "Viral AI Shorts, Crying GPUs: Seedance 2.0 vs Keling 3.0 — Who Laughs Last?"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "url": "https://www.seedance-2.info/article/mn4h99ihps2dbw",
-          "name": "AI Sparks a Buzz in the Entertainment World with Seedance 2.0"
-        }
-      ]
-    }
-    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1001,6 +974,35 @@
             if (bCustom) return 1;
             return (new Date(b.publishedAt || 0)) - (new Date(a.publishedAt || 0));
         }
+        function injectHomeItemListLd(sortedArticles) {
+            var old = document.getElementById('homeLatestItemList');
+            if (old && old.parentNode) old.parentNode.removeChild(old);
+            if (!Array.isArray(sortedArticles) || sortedArticles.length === 0) return;
+            var max = 10;
+            var origin = window.location.origin || 'https://www.seedance-2.info';
+            var items = [];
+            for (var i = 0; i < sortedArticles.length && i < max; i++) {
+                var a = sortedArticles[i];
+                if (!a || !a.id) continue;
+                items.push({
+                    '@type': 'ListItem',
+                    position: items.length + 1,
+                    url: origin + '/article/' + encodeURIComponent(a.id),
+                    name: a.title || 'Seedance-2 article'
+                });
+            }
+            if (!items.length) return;
+            var s = document.createElement('script');
+            s.type = 'application/ld+json';
+            s.id = 'homeLatestItemList';
+            s.textContent = JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'ItemList',
+                name: 'Latest Seedance-2 articles',
+                itemListElement: items
+            });
+            document.head.appendChild(s);
+        }
         fetch('/api/articles')
             .then(function(r) {
                 var store = r.headers.get('X-Store');
@@ -1038,6 +1040,7 @@
                     var firstTitle = (sorted[0].title || 'Latest news').replace(/&/g, '&amp;').replace(/</g, '&lt;');
                     tickerEl.innerHTML = firstTitle + ' &bull; ' + firstTitle + ' &bull; ';
                 }
+                injectHomeItemListLd(sorted);
             })
             .catch(function() { setTicker('Unable to load news'); });
     })();

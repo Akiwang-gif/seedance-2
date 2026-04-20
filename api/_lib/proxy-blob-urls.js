@@ -7,7 +7,7 @@ const BLOB_HOST = /\.public\.blob\.vercel-storage\.com\//i;
 function proxyBlobUrlsInHtml(html) {
   if (!html) return html;
   return String(html).replace(
-    /https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/[^"'>\s]+/gi,
+    /https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/[^"'>\s]+|https:\/\/[a-z0-9.-]+\.r2\.dev\/[^"'>\s]+/gi,
     (url) => {
       if (url.includes('/api/media?')) return url;
       return '/api/media?u=' + encodeURIComponent(url);
@@ -18,7 +18,7 @@ function proxyBlobUrlsInHtml(html) {
 function proxyBlobSrcUrl(url) {
   const s = String(url || '').trim();
   if (!s || s.startsWith('/api/media?')) return s;
-  if (!BLOB_HOST.test(s)) return s;
+  if (!BLOB_HOST.test(s) && !/\.r2\.dev\//i.test(s)) return s;
   return '/api/media?u=' + encodeURIComponent(s);
 }
 

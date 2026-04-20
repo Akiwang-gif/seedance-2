@@ -4,7 +4,12 @@
  */
 const { URL } = require('url');
 
-const ALLOW = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i;
+const ALLOW_BLOB = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i;
+const ALLOW_R2 = /^https:\/\/[a-z0-9.-]+\.r2\.dev\//i;
+
+function allowUrl(u) {
+  return ALLOW_BLOB.test(u) || ALLOW_R2.test(u);
+}
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -26,7 +31,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  if (!u || !ALLOW.test(u)) {
+  if (!u || !allowUrl(u)) {
     res.writeHead(400).end('Invalid url');
     return;
   }

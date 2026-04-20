@@ -79,7 +79,10 @@
     }
     if (!raw) raw = String(article.imageUrl || '').trim();
     var abs = absolutizeImageUrl(raw);
-    if (abs && /\.public\.blob\.vercel-storage\.com\//i.test(abs)) {
+    if (
+      abs &&
+      (/\.public\.blob\.vercel-storage\.com\//i.test(abs) || /\.r2\.dev\//i.test(abs))
+    ) {
       return '/api/media?u=' + encodeURIComponent(abs);
     }
     return abs;

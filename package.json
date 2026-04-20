@@ -2,18 +2,27 @@
   "name": "seedance-2",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "echo Static + API",
+    "build:cf": "node scripts/build-cf-static.js",
+    "deploy:cf": "npm run build:cf && wrangler pages deploy",
+    "sync:cf-kv": "node scripts/sync-cms-articles-to-cf-kv.js",
     "start": "node server-cms.js",
     "cms": "node server-cms.js",
     "setup:hooks": "git config core.hooksPath .githooks"
   },
   "dependencies": {
-    "@vercel/blob": "^0.24.0",
+    "@aws-sdk/client-s3": "^3.1030.0",
     "@upstash/redis": "^1.28.0",
+    "@vercel/blob": "^0.24.0",
     "@vercel/kv": "^1.0.0",
-    "redis": "^4.6.0",
-    "formidable": "^3.5.4"
+    "formidable": "^3.5.4",
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.114.0"
   }
 }

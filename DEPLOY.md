@@ -98,6 +98,114 @@ Vercel Serverless 下用 TCP 连 Redis（REDIS_URL）有时会超时或连不上
 
 ---
 
+## 方式四：Cloudflare Pages（阶段 1 — 安全预览，不切 DNS）
+
+用于在 **Cloudflare 的 `*.pages.dev`（或自定义预览域）** 上验证 CDN 与页面，**不替换** 当前 Vercel 生产部署。
+
+- **静态**：`npm run build:cf` 生成 `dist-cf/`（HTML、`js/`、图标、`robots.txt` 等）。
+- **API**：根目录 `functions/api/[[catchall]].js` 将 `/api/*` **反向代理**到线上 Vercel（默认 `https://www.seedance-2.info`）。因此预览站上的后台写入仍落在 **现有 Vercel 后端**，与直接访问主站等价；仅用于验证 Cloudflare 侧展示与路由。
+- **可选环境变量**（Cloudflare 项目 → Settings → Variables）：`API_PROXY_ORIGIN` — 覆盖代理目标源站。
+- **重要（避免 Worker 1101 / 无限回环）**：当你已经把 **DNS 指到 Cloudflare** 且 `www.seedance-2.info` 由 Pages/Workers 托管时，**不要把 `API_PROXY_ORIGIN` 设成 `https://www.seedance-2.info`**（会与当前站点同域，触发代理回环）。此时应把 `API_PROXY_ORIGIN` 设为 **Vercel 生产域名**（例如 `https://seedance-2-xxxx.vercel.app`）或其它真实上游源站。
+
+**本地发布**（需要 [API Token](https://dash.cloudflare.com/profile/api-tokens)，非交互环境不会弹出浏览器登录）：
+
+1. 复制 `.cf.env.example` 为 **`.cf.env`**，填入 `CLOUDFLARE_API_TOKEN`（可选 `CLOUDFLARE_ACCOUNT_ID`）。**不要提交 `.cf.env`。**
+2. 在项目根执行：
+
+```powershell
+.\scripts\deploy-cf.ps1
+```
+
+或已在本机设置环境变量时：`npm run deploy:cf`。
+
+**GitHub Actions**：工作流 **Cloudflare Pages (preview, manual)** 为 **仅手动触发**；仓库需配置 Secrets `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`。Vercel 的推送部署逻辑不变。
+
+**后续阶段**：将代理改为 Workers 自托管 API、R2/KV 替换 Vercel 存储后，再切换 DNS，避免并行修改生产数据。
+
+### 阶段 2 预埋（已加，默认关闭）
+
+- 已新增 Cloudflare 原生骨架（默认回源 Vercel，行为不变）：
+  - `functions/api/articles.js`（列表）
+  - `functions/api/articles/[id].js`（单篇读取）
+  - `functions/api/article-like.js`（点赞）
+  - `functions/api/upload-image.js`（图片上传）
+- 启用条件：
+  - 原生文章读取：`CF_USE_NATIVE_ARTICLES=1` + KV 绑定 `CMS_KV`
+  - 原生点赞：`CF_USE_NATIVE_ARTICLE_LIKE=1` + KV 绑定 `CMS_KV`
+  - 原生上传：`CF_USE_NATIVE_UPLOAD=1` + R2 绑定 `CMS_UPLOAD_R2` + `CMS_UPLOAD_PUBLIC_BASE`
+- **原生文章写入（可选，用于在 Cloudflare 上跑完整后台，不再回源 Vercel 写 KV）**：`CF_USE_NATIVE_ARTICLES_WRITE=1`（需同时 `CF_USE_NATIVE_ARTICLES=1`、已绑定 `CMS_KV`、并配置 `CMS_WRITE_SECRET`）。启用后 `POST/PATCH /api/articles` 与 `PUT/DELETE /api/articles/:id` 直接读写 `CMS_KV` 中的 `cms_articles`。
+- 同站图片代理：`/api/media`（Blob 与 `*.r2.dev` 公网 URL）与 `/api/cms-verify` 已在 `functions/api/` 提供，与 Vercel 行为对齐。
+- `CMS_KV` 中使用同一键：`cms_articles`。
+- 未启用写入开关前，`GET` 可走原生 KV，`POST/PUT/DELETE` 仍回源 Vercel（若未开 `CF_USE_NATIVE_ARTICLES_WRITE`）。
+
+### 阶段 2 启用步骤（按顺序，建议先在预览域验证）
+
+1. **绑定 KV（CMS_KV）**
+   - Cloudflare Dashboard → **Workers & Pages** → 选择 `seedance-2-cf-preview` → **Settings** → **Bindings**
+   - 添加 **KV Namespace**：
+     - Variable name: `CMS_KV`
+     - Namespace: 选你用于文章数据的 KV（新建也可）
+
+2. **绑定 R2（CMS_UPLOAD_R2）**
+   - 同一页添加 **R2 Bucket**：
+     - Variable name: `CMS_UPLOAD_R2`
+     - Bucket: 选用于图片上传的 R2 bucket
+
+3. **设置变量（Environment Variables / Secrets）**
+   - `CMS_UPLOAD_PUBLIC_BASE`：R2 公网访问基础地址（例如你的自定义域或 r2.dev 域名，不带结尾 `/`）
+   - `CMS_WRITE_SECRET`：与现有后台一致的写入密钥（用于原生上传鉴权）
+
+4. **导入文章数据到 CMS_KV（一次性）**
+   - 已提供脚本：`scripts/sync-cms-articles-to-cf-kv.js`
+   - 在 `.cf.env` 补充：
+     - `CMS_KV_NAMESPACE_ID=<你的 Cloudflare KV namespace id>`
+     - （可选）`CMS_BEARER_TOKEN=<CMS 写入密钥>`，用于拉取草稿 + 已发布
+   - 执行：
+
+```bash
+# 先 dry-run（只看数量和体积，不写入）
+npm run sync:cf-kv
+
+# 确认后写入 Cloudflare KV
+npm run sync:cf-kv -- --write --verify
+```
+
+   - `--verify` 会回读 `cms_articles`，校验写入后的文章数量。
+
+5. **逐个开关验证（每次只开一个）**
+   - 先开：`CF_USE_NATIVE_ARTICLES=1`
+     - 验证：首页列表、文章详情、`/api/articles` 的 `X-Store`/返回内容是否正常
+   - 再开：`CF_USE_NATIVE_ARTICLE_LIKE=1`
+     - 验证：点赞数递增，刷新后持久化
+   - 最后开：`CF_USE_NATIVE_UPLOAD=1`
+     - 验证：后台上传图片成功，返回 URL 指向 `CMS_UPLOAD_PUBLIC_BASE`
+
+6. **回滚方式（秒级）**
+   - 任一异常，先把对应 `CF_USE_NATIVE_*` 改回 `0` 或删除该变量，重新部署。
+   - 因默认路径是回源 Vercel，回滚后流量立即回到现有稳定后端。
+
+### 全 Cloudflare 模式（当前代码默认）
+
+- `functions/api/articles.js`、`functions/api/articles/[id].js`、`functions/api/article-like.js`、`functions/api/upload-image.js`、`functions/api/sitemap.js` 与 `functions/sitemap.xml.js` 已改为 **Cloudflare 原生优先**，不再依赖 Vercel 回源。
+- `functions/api/[[catchall]].js` 现在对未知 API 路由返回 `404`（不再做 Vercel 兜底代理）。
+- `CF_USE_NATIVE_ARTICLES_WRITE`：
+  - 未设置或设为 `1`：允许原生写入；
+  - 设为 `0`：禁用写入（返回 503），用于只读保护。
+- 要求绑定：
+  - `CMS_KV`（文章读写 / 点赞 / sitemap 动态文章 URL）
+  - `CMS_UPLOAD_R2` + `CMS_UPLOAD_PUBLIC_BASE`（图片上传）
+  - `CMS_WRITE_SECRET`（后台写操作鉴权）
+
+### 推荐变量矩阵（Preview / Production）
+
+- `API_PROXY_ORIGIN`：Preview=当前稳定站；Production=当前稳定站（在未完全切换前）
+- `CF_USE_NATIVE_ARTICLES`：Preview 先开，Production 后开
+- `CF_USE_NATIVE_ARTICLE_LIKE`：Preview 先开，Production 后开
+- `CF_USE_NATIVE_UPLOAD`：Preview 最后开，Production 最后开
+- `CMS_KV` / `CMS_UPLOAD_R2` / `CMS_UPLOAD_PUBLIC_BASE` / `CMS_WRITE_SECRET`：Preview 与 Production 都应配置，但仅在开关开启后生效
+
+---
+
 ## 本地运行
 
 ```bash

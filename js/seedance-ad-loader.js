@@ -3,6 +3,21 @@
  * Scripts run in order so atOptions + invoke.js pairs stay correct.
  */
 (function () {
+    function shouldDisableAdsForThisPage() {
+        try {
+            var u = new URL(window.location.href);
+            var host = String(u.hostname || '').toLowerCase();
+            var forceOn = (u.searchParams.get('ads') || '').toLowerCase() === 'on';
+            var forceOff = (u.searchParams.get('ads') || '').toLowerCase() === 'off';
+            if (forceOn) return false;
+            if (forceOff) return true;
+            // Keep preview/staging clean by default.
+            return host.endsWith('.pages.dev');
+        } catch (e) {
+            return false;
+        }
+    }
+
     function ensureStyle() {
         if (document.getElementById('seedance-ad-slot-style')) return;
         var st = document.createElement('style');
@@ -75,6 +90,7 @@
     }
 
     function run() {
+        if (shouldDisableAdsForThisPage()) return;
         ensureStyle();
         var el = document.getElementById('seedance-ad-root');
         if (!el) {
