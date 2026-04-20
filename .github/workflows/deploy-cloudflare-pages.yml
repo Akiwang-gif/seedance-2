@@ -1,9 +1,12 @@
-# 仅手动触发：向 Cloudflare Pages 发布「静态 + API 代理」预览，不替代 Vercel 自动部署。
+# 推送到 main 时自动部署到 Cloudflare Pages；也可在 Actions 里手动 Run workflow。
 # 需在仓库 Secrets 配置：CLOUDFLARE_API_TOKEN、CLOUDFLARE_ACCOUNT_ID（见 Cloudflare Dashboard → API Tokens）
 
-name: Cloudflare Pages (preview, manual)
+name: Cloudflare Pages (preview)
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
