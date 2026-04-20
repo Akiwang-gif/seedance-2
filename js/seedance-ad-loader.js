@@ -3,6 +3,39 @@
  * Scripts run in order so atOptions + invoke.js pairs stay correct.
  */
 (function () {
+    function isMobileClient() {
+        try {
+            var ua = String(navigator.userAgent || '');
+            var byUa = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            var byWidth = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+            return !!(byUa || byWidth);
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function shouldSkipRedirectScript(src) {
+        try {
+            var url = String(src || '').toLowerCase();
+            var isRedirectAd = /profitablecpmratenetwork\.com\//.test(url);
+            if (!isRedirectAd) return false;
+            if (!isMobileClient()) return false;
+
+            // On mobile, avoid redirect loops when users navigate back to the article page.
+            var key = 'seedance_mobile_redirect_ad_last_ts';
+            var cooldownMs = 30 * 60 * 1000; // 30 minutes
+            var now = Date.now();
+            var last = Number(sessionStorage.getItem(key) || 0);
+            if (last && now - last < cooldownMs) {
+                return true;
+            }
+            sessionStorage.setItem(key, String(now));
+            return false;
+        } catch (e) {
+            return false;
+        }
+    }
+
     function shouldDisableAdsForThisPage() {
         try {
             var u = new URL(window.location.href);
@@ -64,6 +97,10 @@
             var hasSrc = node.src && String(node.src).length > 0;
 
             if (hasSrc) {
+                if (shouldSkipRedirectScript(node.src)) {
+                    step(i + 1);
+                    return;
+                }
                 for (var j = 0; j < node.attributes.length; j++) {
                     var a = node.attributes[j];
                     s.setAttribute(a.name, a.value);
