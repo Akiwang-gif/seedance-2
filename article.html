@@ -751,6 +751,7 @@
             } else {
                 bodyEl.textContent = article.description || '';
             }
+            placeArticleAdAfterFirstBlock();
 
             var likeSlot = document.getElementById('articleLikeSlot');
             if (likeSlot) {
@@ -790,6 +791,18 @@
             }
 
             renderRelatedLatest(sorted, article.id);
+        }
+
+        function placeArticleAdAfterFirstBlock() {
+            var ad = document.getElementById('seedance-ad-root');
+            var body = document.getElementById('articleBody');
+            if (!ad || !body) return;
+            var firstBlock = body.querySelector('p, .article-img, h2, h3, ul, ol, blockquote');
+            if (firstBlock && firstBlock.parentNode === body) {
+                firstBlock.insertAdjacentElement('afterend', ad);
+                return;
+            }
+            body.appendChild(ad);
         }
 
         function fillRelatedCard(el, a) {

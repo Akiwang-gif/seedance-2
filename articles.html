@@ -728,6 +728,19 @@
                 }
                 gridEl.appendChild(card);
             });
+            placeMidListAd();
+        }
+
+        function placeMidListAd() {
+            var ad = document.getElementById('seedance-ad-root');
+            if (!ad || !gridEl) return;
+            var cards = gridEl.querySelectorAll('.article-card');
+            if (!cards.length) return;
+            var insertAfterIndex = Math.min(4, cards.length - 1); // position B: middle of the list
+            var anchor = cards[insertAfterIndex];
+            if (anchor && anchor.parentNode === gridEl) {
+                anchor.insertAdjacentElement('afterend', ad);
+            }
         }
 
         function pageLink(page, label, isActive, isDisabled) {
