@@ -581,6 +581,7 @@
                 <a href="articles.html" class="articles-clear-search" id="clearSearchLink" hidden title="Clear search filters and show all articles">Clear filters</a>
             </form>
         </div>
+        <div id="seedance-ad-root" class="seedance-ad-slot"></div>
         <div id="articlesGrid" class="articles-grid"></div>
         <section id="articlesFallback" class="articles-fallback" aria-labelledby="articles-fallback-heading">
             <h2 id="articles-fallback-heading">Latest AI video news coverage</h2>
@@ -593,8 +594,6 @@
         </section>
         <nav id="pagination" class="pagination" aria-label="Article pagination"></nav>
     </main>
-
-    <div id="seedance-ad-root" class="seedance-ad-slot"></div>
 
     <footer class="site-footer" role="contentinfo">
         <div class="footer-inner">
@@ -728,19 +727,6 @@
                 }
                 gridEl.appendChild(card);
             });
-            placeMidListAd();
-        }
-
-        function placeMidListAd() {
-            var ad = document.getElementById('seedance-ad-root');
-            if (!ad || !gridEl) return;
-            var cards = gridEl.querySelectorAll('.article-card');
-            if (!cards.length) return;
-            var insertAfterIndex = Math.min(4, cards.length - 1); // position B: middle of the list
-            var anchor = cards[insertAfterIndex];
-            if (anchor && anchor.parentNode === gridEl) {
-                anchor.insertAdjacentElement('afterend', ad);
-            }
         }
 
         function pageLink(page, label, isActive, isDisabled) {

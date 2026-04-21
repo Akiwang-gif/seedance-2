@@ -493,9 +493,9 @@
             <span class="article-category" id="articleCategory"></span>
             <h1 class="article-title" id="articleTitle"></h1>
             <p class="article-meta" id="articleMeta"></p>
+            <div id="seedance-ad-root" class="seedance-ad-slot"></div>
             <div class="article-body" id="articleBody"></div>
             <div class="article-like-slot article-like-slot--footer" id="articleLikeSlot" style="display:none;"></div>
-            <div id="seedance-ad-root" class="seedance-ad-slot"></div>
             <nav class="article-nav" aria-label="Previous and next articles">
                 <a href="#" id="prevLink" class="prev" title="Previous article on Seedance-2">
                     <span class="nav-label">Previous</span>
@@ -751,8 +751,6 @@
             } else {
                 bodyEl.textContent = article.description || '';
             }
-            placeArticleAdAfterFirstBlock();
-
             var likeSlot = document.getElementById('articleLikeSlot');
             if (likeSlot) {
                 likeSlot.style.display = '';
@@ -791,18 +789,6 @@
             }
 
             renderRelatedLatest(sorted, article.id);
-        }
-
-        function placeArticleAdAfterFirstBlock() {
-            var ad = document.getElementById('seedance-ad-root');
-            var body = document.getElementById('articleBody');
-            if (!ad || !body) return;
-            var firstBlock = body.querySelector('p, .article-img, h2, h3, ul, ol, blockquote');
-            if (firstBlock && firstBlock.parentNode === body) {
-                firstBlock.insertAdjacentElement('afterend', ad);
-                return;
-            }
-            body.appendChild(ad);
         }
 
         function fillRelatedCard(el, a) {
