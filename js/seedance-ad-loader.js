@@ -33,6 +33,7 @@
         st.textContent =
             '.seedance-inline-ad-wrap{margin:1.25rem auto;max-width:100%;padding:0 1rem;text-align:center}' +
             '.seedance-ad-slot{margin:1.25rem auto;max-width:100%;padding:0 1rem;text-align:center}' +
+            '.seedance-ad-slot:empty{display:none}' +
             '#seedance-inline-ad-middle{margin-top:3.5rem}' +
             '.seedance-inline-ad-wrap .adsbygoogle{max-width:100%}' +
             '.seedance-ad-slot .adsbygoogle{max-width:100%}' +
@@ -111,9 +112,36 @@
     }
 
     function getMiddleMountPoint() {
+        if (isArticleDetailPage()) return null;
         var root = document.getElementById('seedance-ad-root');
         if (root) return root;
         return null;
+    }
+
+    function findArticleBodyMiddleAnchor() {
+        var body = document.getElementById('articleBody');
+        if (!body) return null;
+        var nodes = Array.prototype.slice.call(
+            body.querySelectorAll('p, h2, h3, h4, li, blockquote, .article-img, .article-img-wrap, figure, img')
+        ).filter(function (el) {
+            return !isUnsafeMiddlePlacement(el);
+        });
+        if (nodes.length >= 4) {
+            return nodes[Math.floor(nodes.length / 2)];
+        }
+        var directChildren = Array.prototype.slice.call(body.children).filter(function (el) {
+            return !isUnsafeMiddlePlacement(el);
+        });
+        if (directChildren.length >= 2) {
+            return directChildren[Math.floor(directChildren.length / 2)];
+        }
+        return null;
+    }
+
+    function clearLegacyArticleAdRoot() {
+        var legacyRoot = document.getElementById('seedance-ad-root');
+        if (!legacyRoot) return;
+        legacyRoot.innerHTML = '';
     }
 
     function getPrimaryContentContainer() {
@@ -204,10 +232,44 @@
         if (!document.getElementById('seedance-inline-ad-middle')) {
             var middleMountPoint = getMiddleMountPoint();
             var middleAd = createAdBlock('seedance-inline-ad-middle', MIDDLE_SLOT_ID);
+            var middleIns = middleAd.querySelector('ins.adsbygoogle');
 
-            if (middleMountPoint) {
+            if (isArticleDetailPage()) {
+                clearLegacyArticleAdRoot();
+                var articleAnchor = findArticleBodyMiddleAnchor();
+                if (articleAnchor && insertAfter(articleAnchor, middleAd)) {
+                    requestRender(middleIns);
+                } else {
+                    var articleBody = document.getElementById('articleBody');
+                    if (articleBody) {
+                        var observer = new MutationObserver(function () {
+                            if (document.getElementById('seedance-inline-ad-middle')) {
+                                observer.disconnect();
+                                return;
+                            }
+                            var dynamicAnchor = findArticleBodyMiddleAnchor();
+                            if (dynamicAnchor && insertAfter(dynamicAnchor, middleAd)) {
+                                observer.disconnect();
+                                requestRender(middleIns);
+                            }
+                        });
+                        observer.observe(articleBody, { childList: true, subtree: true });
+                        setTimeout(function () {
+                            if (observer) observer.disconnect();
+                            if (!document.getElementById('seedance-inline-ad-middle')) {
+                                articleBody.appendChild(middleAd);
+                                requestRender(middleIns);
+                            }
+                        }, 10000);
+                    } else {
+                        document.body.appendChild(middleAd);
+                        requestRender(middleIns);
+                    }
+                }
+            } else if (middleMountPoint) {
                 middleMountPoint.innerHTML = '';
                 middleMountPoint.appendChild(middleAd);
+                requestRender(middleIns);
             } else {
                 var container = getPrimaryContentContainer();
                 var middleAnchor = findMiddleAnchor(container);
@@ -221,9 +283,8 @@
                         document.body.appendChild(middleAd);
                     }
                 }
+                requestRender(middleIns);
             }
-
-            requestRender(middleAd.querySelector('ins.adsbygoogle'));
         }
     }
 
