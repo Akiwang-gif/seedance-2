@@ -33,6 +33,7 @@
         st.textContent =
             '.seedance-inline-ad-wrap{margin:1.25rem auto;max-width:100%;padding:0 1rem;text-align:center}' +
             '.seedance-ad-slot{margin:1.25rem auto;max-width:100%;padding:0 1rem;text-align:center}' +
+            '#seedance-inline-ad-middle{margin-top:3.5rem}' +
             '.seedance-inline-ad-wrap .adsbygoogle{max-width:100%}' +
             '.seedance-ad-slot .adsbygoogle{max-width:100%}' +
             '@media (max-width:420px){.seedance-inline-ad-wrap{padding:0 0.5rem}}';
