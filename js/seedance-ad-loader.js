@@ -102,6 +102,17 @@
         return !!(document.getElementById('articleContent') && document.getElementById('articleMedia'));
     }
 
+    function isArticlesListingPage() {
+        if (!document.getElementById('articlesGrid')) return false;
+        try {
+            var u = new URL(window.location.href);
+            var p = String(u.pathname || '').toLowerCase();
+            return p === '/articles' || p === '/articles.html';
+        } catch (e) {
+            return true;
+        }
+    }
+
     function findStableTopAnchor() {
         return (
             document.querySelector('.site-nav-bar') ||
@@ -142,6 +153,17 @@
         var legacyRoot = document.getElementById('seedance-ad-root');
         if (!legacyRoot) return;
         legacyRoot.innerHTML = '';
+    }
+
+    function placeMiddleAdAfterSecondCard(middleAd, middleIns) {
+        var grid = document.getElementById('articlesGrid');
+        if (!grid) return false;
+        var cards = grid.querySelectorAll('.article-card');
+        if (cards.length >= 2 && insertAfter(cards[1], middleAd)) {
+            requestRender(middleIns);
+            return true;
+        }
+        return false;
     }
 
     function getPrimaryContentContainer() {
@@ -234,7 +256,36 @@
             var middleAd = createAdBlock('seedance-inline-ad-middle', MIDDLE_SLOT_ID);
             var middleIns = middleAd.querySelector('ins.adsbygoogle');
 
-            if (isArticleDetailPage()) {
+            if (isArticlesListingPage()) {
+                clearLegacyArticleAdRoot();
+                if (!placeMiddleAdAfterSecondCard(middleAd, middleIns)) {
+                    var listingGrid = document.getElementById('articlesGrid');
+                    if (listingGrid) {
+                        var listObserver = new MutationObserver(function () {
+                            if (document.getElementById('seedance-inline-ad-middle')) {
+                                listObserver.disconnect();
+                                return;
+                            }
+                            if (placeMiddleAdAfterSecondCard(middleAd, middleIns)) {
+                                listObserver.disconnect();
+                            }
+                        });
+                        listObserver.observe(listingGrid, { childList: true, subtree: false });
+                        setTimeout(function () {
+                            listObserver.disconnect();
+                            if (!document.getElementById('seedance-inline-ad-middle')) {
+                                var footer = document.querySelector('footer');
+                                if (footer && footer.parentNode) {
+                                    footer.parentNode.insertBefore(middleAd, footer);
+                                } else {
+                                    document.body.appendChild(middleAd);
+                                }
+                                requestRender(middleIns);
+                            }
+                        }, 10000);
+                    }
+                }
+            } else if (isArticleDetailPage()) {
                 clearLegacyArticleAdRoot();
                 var articleAnchor = findArticleBodyMiddleAnchor();
                 if (articleAnchor && insertAfter(articleAnchor, middleAd)) {
