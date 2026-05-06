@@ -338,6 +338,8 @@ def get_image_count(word_count: int) -> int:
     """
     根据文章字数确定配图数量
 
+    站点默认正文约 700 英文词，通常落在 <=750 档 → 3 张（封面 + 2 正文）。
+
     Args:
         word_count: 文章字数
 
